@@ -1,0 +1,113 @@
+# GATE 1 GROUND TRUTH -- STATUS: REVIEWED 2026-08-27
+#
+# Reviewed against fixtures/icoFoam.C (OpenFOAM-dev, pulled 2026-08-24)
+# and OpenFOAM Programmer's Guide v2512. All 10 entries confirmed.
+#
+# Key decisions during review:
+#   - fvi:: entries confirmed via upstream OpenFOAM-dev source (fviGrad.H,
+#     fviDiv.H/.C). discretization_role updated to "explicit_internal".
+#   - fvi::div labeled "flux_divergence" (not "convection") since it
+#     appears in the pressure equation acting on a face-flux field.
+#   - fvm::laplacian is the SAME operator in both cases (page 40, eq 3.14:
+#     integral of Gamma*grad(phi) over faces). Single "diffusion" label
+#     retained; composition edges capture which equation each node belongs to.
+#   - physical_type labels describe what the operator IS, not where it
+#     appears. Equation context is in the graph structure, not the label.
+
+source_file: fixtures/icoFoam.C
+source_commit_note: >
+  Pulled 2026-08-24 from github.com/OpenFOAM/OpenFOAM-dev,
+  applications/legacy/incompressible/icoFoam/icoFoam.C. Re-pull and re-check
+  if the upstream file changes -- ground truth is tied to a specific source
+  revision, not to "icoFoam" as a concept.
+
+entries:
+  - line: 77
+    namespace: fvm
+    function: ddt
+    physical_type: time_derivative
+    arguments: [U]
+    reviewed: true
+
+  - line: 78
+    namespace: fvm
+    function: div
+    physical_type: convection
+    arguments: [phi, U]
+    reviewed: true
+
+  - line: 79
+    namespace: fvm
+    function: laplacian
+    physical_type: diffusion
+    arguments: [nu, U]
+    reviewed: true
+
+  - line: 84
+    namespace: fvi
+    function: grad
+    physical_type: pressure_gradient
+    arguments: [p]
+    reviewed: true
+    note: >
+      Reviewed and confirmed. fvi::grad returns volInternalField
+      (internal-cell-only, no boundary treatment), unlike fvc:: which
+      returns a full volField. Confirmed against OpenFOAM-dev source
+      (fviGrad.H) and Programmer's Guide v2512. discretization_role
+      updated to "explicit_internal".
+
+  - line: 95
+    namespace: fvc
+    function: flux
+    physical_type: flux_reconstruction
+    arguments: [HbyA]
+    reviewed: true
+
+  - line: 96
+    namespace: fvc
+    function: interpolate
+    physical_type: interpolation
+    arguments: [rAU]
+    reviewed: true
+
+  - line: 96
+    namespace: fvc
+    function: ddtCorr
+    physical_type: temporal_flux_correction
+    arguments: [U, phi]
+    reviewed: true
+
+  - line: 111
+    namespace: fvm
+    function: laplacian
+    physical_type: diffusion
+    arguments: [rAU, p]
+    reviewed: true
+    note: >
+      Reviewed and confirmed. fvm::laplacian is the same operator in both
+      cases -- page 40 eq 3.14: integral of Gamma*grad(phi) over faces.
+      Single "diffusion" label retained. The operator doesn't know or care
+      what physical quantity phi represents; equation context (momentum vs
+      pressure Poisson) is captured by composition edges in the operator
+      graph, not by the operator's own type.
+
+  - line: 111
+    namespace: fvi
+    function: div
+    physical_type: flux_divergence
+    arguments: [phiHbyA]
+    reviewed: true
+    note: >
+      Reviewed and confirmed. fvi::div returns volInternalField
+      (internal-cell-only). Labeled "flux_divergence" rather than
+      "convection" since it appears in the pressure equation acting on a
+      face-flux field (phiHbyA), not on a momentum-convection term.
+      Confirmed against OpenFOAM-dev source (fviDiv.H) and Programmer's
+      Guide v2512.
+
+  - line: 126
+    namespace: fvi
+    function: grad
+    physical_type: pressure_gradient
+    arguments: [p]
+    reviewed: true
