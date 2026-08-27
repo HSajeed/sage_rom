@@ -1,6 +1,6 @@
 # Technical Report: sage-cfd
 
-*Repository inspection report — no files modified during analysis (this report excepted).*
+*Repository inspection report — updated 2026-08-27 with bug_updates fixes and GT review.*
 
 ## 1. Purpose
 
@@ -33,7 +33,7 @@ sage-cfd/
     │   └── llm_labeler.py       # STUB: prompt template + schema, no API call
     ├── rom/composable_operator_rom.py  # single ROM class + Arm2/Arm3 builders
     ├── validation/
-    │   ├── ground_truth_icofoam.yaml  # DRAFT answer key (all reviewed:false)
+    │   ├── ground_truth_icofoam.yaml  # REVIEWED 2026-08-27 (all 10 entries reviewed:true)
     │   ├── gate1_check.py             # extractor precision/recall vs GT
     │   └── detect_modification.py     # identity-based diff between sources
     └── fixtures/                # real OpenFOAM-dev icoFoam.C + fvSchemes,
@@ -64,9 +64,8 @@ Graph → `build_from_operator_graph()` maps distinct `physical_type`s to learna
 
 ## 5. Dependencies & Workflow
 
-- Phase 1: `torch` + flowTorch (CFD library). The PyPI package named `flowtorch` is an **unrelated Meta normalizing-flows project** — *verified against the PyPI registry*: summary "Normalizing Flows for PyTorch", Copyright Meta Platforms, source `facebookincubator/flowtorch`. **Note:** the phase1 README's install command (`git+https://github.com/FlowModelingControl/flowtorch.git`) is outdated — the canonical repo is now `AndreWeiner/flowtorch` (old org redirects) and the library's own documented PyPI distribution is **`flowtorch-fluid`** (`pip install flowtorch-fluid`). Either works today; prefer the canonical form.
-  Requires the `FLOWTORCH_DATASETS` env var pointing at the downloaded dataset directory (hosted at TU Dresden datashare per flowTorch README; `DATASETS` is populated by scanning that local dir, not a remote registry). Real-data path never exercised in this environment (no dependencies installed here at all — nothing can be executed locally).
-- Phase 2: `tree-sitter`, `tree-sitter-cpp`, `networkx`, `pyyaml`, `torch` (requirements.txt). Run as modules from `phase2/`: `-m extractor.ast_parser`, `-m extractor.operator_graph`, `-m validation.gate1_check`, `-m validation.detect_modification`, `-m rom.composable_operator_rom`.
+- Phase 1: `torch` + flowTorch (CFD library). The PyPI package named `flowtorch` is an **unrelated Meta normalizing-flows project** — *verified against the PyPI registry*: summary "Normalizing Flows for PyTorch", Copyright Meta Platforms, source `facebookincubator/flowtorch`. **Note:** the phase1 README's install command (`git+https://github.com/FlowModelingControl/flowtorch.git`) has been updated to `pip install flowtorch-fluid` — the library's own documented PyPI distribution (import name is still `flowtorch`). Requires the `FLOWTORCH_DATASETS` env var pointing at the downloaded dataset directory. Real-data path untested (flowtorch-fluid not yet installed; Phase 2 deps installed in `dmdsae` conda env).
+- Phase 2: `tree-sitter`, `tree-sitter-cpp`, `networkx`, `pyyaml`, `torch` (requirements.txt). **Installed in `dmdsae` conda env** (Python 3.11.15, torch 2.12.1). Run as modules from `phase2/`: `-m extractor.ast_parser`, `-m extractor.operator_graph`, `-m validation.gate1_check`, `-m validation.detect_modification`, `-m rom.composable_operator_rom`.
 
 ## 6. Testing & Validation
 
@@ -84,24 +83,24 @@ Graph → `build_from_operator_graph()` maps distinct `physical_type`s to learna
 | Phase 2 AST extraction | Working, claimed 10/10 on real OpenFOAM-dev source |
 | fvSchemes fusion | Working |
 | Operator graph edges | Working (phiHbyA trace confirmed) |
-| Ground truth YAML | **Draft, all `reviewed: false`; harness warns every run** |
+| Ground truth YAML | **Reviewed 2026-08-27**, all 10 entries `reviewed:true`, harness passes without warnings |
 | llm_labeler | Interface/prompt only; `stub_label` raises `NotImplementedError` |
 | ComposableOperatorROM | Wiring smoke-tested on random synthetic data only |
 | Real CFD training/validation | Not started |
 
 ## 8. Known Issues, Fragilities & Uncertainties
 
-1. **Ground truth circularity risk** — self-flagged: the draft answer key was written by the same agent that built the extractor; Gate 1 currently proves harness consistency, not correctness. Reviewing `ground_truth_icofoam.yaml` is explicitly the top next step.
-2. **`fvi::` namespace — existence CONFIRMED externally, semantics now largely pinned down**: `OpenFOAM-dev/src/finiteVolume/finiteVolume/fvi/` exists on GitHub master (`fviGrad.H`, `fviDiv.H/.C`, plus fviDdt/Laplacian/Reconstruct/Sup etc.), declares `InNamespace Foam::fvi`, and the header docstring states the operators return a **`volInternalField`** ("Calculate the gradient of the given field returning a volInternalField") — i.e. internal-field-only evaluation without boundary handling. This explains dev's `U.internalFieldRef() = HbyA() - rAU()*fvi::grad(p)` vs v11's `U = HbyA - rAU*fvc::grad(p)` (v11 icoFoam.C still uses `fvc::grad`/`fvc::div` — verified via cpp.openfoam.org). The fixture matches upstream dev line-for-line. **Residual caveat**: whether `fvi::div(phiHbyA)` should be labeled `flux_divergence` rather than `convection` remains a human-review judgment; the ontology's LOW-CONFIDENCE flags can likely be upgraded after that review.
+1. **Ground truth circularity risk** — **RESOLVED 2026-08-27**: all 10 entries reviewed against OpenFOAM-dev source and Programmer's Guide v2512. Gate 1 now runs without unreviewed-entry warnings.
+2. **`fvi::` namespace — CONFIRMED, labels finalized**: `OpenFOAM-dev/src/finiteVolume/finiteVolume/fvi/` exists on GitHub master, declares `InNamespace Foam::fvi`, header docstrings state operators return `volInternalField` (internal-cell-only, no boundary handling). Confirmed against v11's `icoFoam.C` (still `fvc::`) vs dev's `icoFoam.C` (`fvi::` + `U.internalFieldRef()`). **`fvi::div(phiHbyA)` labeled `flux_divergence`** (not `convection`) — appears in the pressure equation acting on a face-flux field. **`fvm::laplacian`** is the same operator in both cases (page 40, eq 3.14: `∫_V ∇•(Γ∇φ) dV`); single `diffusion` label retained, composition edges capture equation context. All fvi:: `LOW CONFIDENCE` flags removed; `discretization_role` updated to `explicit_internal`.
 3. **Documented library bug dependency — CONFIRMED against upstream source** (flowtorch `analysis/dmd.py`): the `dynamics` property's single-matrix branch builds its Vandermonde matrix with legacy `pt.vander` (descending powers), while `.predict()` and even the *list* branch of `dynamics` use `pt.linalg.vander` (ascending) — internally inconsistent three ways; `.reconstruction` inherits the descending convention. The repo's workaround (use `.predict()` only, never `.reconstruction`) is sound. Caveats: (a) verified against upstream master, not the exact installed version (flowtorch is not installed in this environment); (b) the specific experiment magnitudes quoted in the docstring (139% reconstruction error, 1e-6 predict error on an exact linear system) are plausible given the mechanism but were not independently reproduced here. Re-verify if flowtorch is upgraded.
 4. **Data-efficiency curve fragility**: energy-threshold rank selection is unstable at small n; curve is single-seed, non-monotonic; README says to inspect selected ranks per n and average over multiple seeds before trusting it.
 5. **Neural ROM long-horizon limitation**: training loss supervises only ≤10-step rollouts; low train loss ≠ accurate full-length rollout (~27% relative rollout error observed despite low training loss). Characteristic of the training regime, not a bug.
 6. **Phase 2 graph details worth noting**:
    - Composition-edge ordering relies on node insertion (source-line) order within each `assigned_to` group — correct for these fixtures but implicit.
-   - `build_from_operator_graph` with `collapse_duplicates=True` merges all `UNKNOWN`-typed nodes across *different* unknown namespaces into one block named `"UNKNOWN"` — a latent collision if multiple custom namespaces appear.
+   - `build_from_operator_graph` with `collapse_duplicates=True` merges nodes with the same `physical_type`. **FIXED**: unrecognized calls now get `UNKNOWN:{qualified_name}` instead of flat `"UNKNOWN"`, preventing silent collision between different custom namespaces (bug_updates #3, applied 2026-08-27).
    - `fvschemes_parser` regex handles only flat, non-nested blocks (fine for fvSchemes, fragile for general dicts).
    - `detect_modification.diff_extractions` matches multiplicities correctly but is O(n²) via list.remove — irrelevant at this scale.
-7. **Uncertain / deferred by the repo itself**: whether `fvm::Sp` deserves a more specific physical_type than `source_implicit`; whether velocity-vs-pressure diffusion should be distinguished (flagged in ground-truth notes on line 111); whether `fvi::div(phiHbyA)` should be `flux_divergence` rather than `convection`.
+7. **Resolved questions**: `fvi::div(phiHbyA)` now labeled `flux_divergence` (not `convection`); `fvm::laplacian` velocity-vs-pressure diffusion split **not warranted** — same operator ( Programmer's Guide eq 3.14), composition edges capture equation context; `fvm::Sp` remains `source_implicit` (sufficient for syntax-only pass).
 8. **Two historical bugs found and fixed during scaffolding** (fixes present in current code):
    - `_find_enclosing_lhs` used a fixed 4-hop parent walk, silently losing `assigned_to` on terms of a 4-term sum; now walks unbounded through compositional node types.
    - `extract_calls` filtered to `{fvm, fvc, fvi}` at extraction time, dropping custom namespaces before ontology lookup could flag them; filtering now happens only at lookup.
@@ -132,4 +131,4 @@ Factual assertions made by the repo's docstrings/READMEs were independently chec
 
 ## 11. Bottom Line
 
-The repository is unusually honest about its own limits — nearly every caveat above is self-documented in docstrings and READMEs. Independent verification found its specific factual claims to be accurate in mechanism and substance, with two exceptions worth acting on: the phase1 install command references a renamed org (use `flowtorch-fluid` or `AndreWeiner/flowtorch`), and the "~13.7k cells" figure remains unverified. The gap between current state and the project's goal consists of: (1) human review of the ground-truth answer key, (2) generation of real CFD snapshot data (unmodified + modified solver), and (3) actual multi-seed training and comparison of Arms 1/2/3 on that data. Everything upstream of those steps is scaffolded, smoke-tested, and internally consistent, but nothing downstream of synthetic fixtures constitutes a scientific result yet.
+The repository is unusually honest about its own limits — nearly every caveat above is self-documented in docstrings and READMEs. Independent verification found its specific factual claims to be accurate in mechanism and substance. **As of 2026-08-27**: all 6 bug_updates fixes applied, ground truth fully reviewed (10/10 entries reviewed:true), regression suite passes (Gate 1: 100/100/100, detect_modification: both tiers, ROM smoke test: Arm 3 = 7 blocks, all gradients flow). Phase 2 deps installed in `dmdsae` conda env. The remaining gap to the project's goal is: (1) get flowTorch + dataset working for Phase 1 real-data validation, (2) set up OpenFOAM locally for real snapshot generation, (3) multi-seed training and comparison of Arms 1/2/3. Everything upstream of those steps is scaffolded, tested, and internally consistent.
