@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-09-05T09:25:13.770937",
+  "dataset_path": "/mnt/s/opencode/sage-cfd/data/datasets_29_10_2021/datasets/of_cylinder2D_binary",
+  "t_split": 8.0,
+  "dt": 0.025,
+  "n_train": 319,
+  "n_test": 81,
+  "rank_99": 63,
+  "latent_dim": 8,
+  "neuralrom_epochs": 800,
+  "neuralrom_rollout_horizon": 30
+}

@@ -1,0 +1,86 @@
+{
+  "metric": "dmd_eigenvalues",
+  "description": "DMD eigenvalues with magnitude, continuous-time growth rate, and frequency in Hz",
+  "eigenvalues": [
+    {
+      "magnitude": 1.0000243186950684,
+      "growth_rate": 0.0009727359283715487,
+      "frequency_hz": 3.0019409955717085
+    },
+    {
+      "magnitude": 1.0000243186950684,
+      "growth_rate": 0.0009727359283715487,
+      "frequency_hz": -3.0019409955717085
+    },
+    {
+      "magnitude": 1.0000064373016357,
+      "growth_rate": 0.00025749122141860425,
+      "frequency_hz": 0.0
+    },
+    {
+      "magnitude": 0.9475834369659424,
+      "growth_rate": -2.153611421585083,
+      "frequency_hz": 0.0
+    },
+    {
+      "magnitude": 1.0000274181365967,
+      "growth_rate": 0.00109671032987535,
+      "frequency_hz": 6.003982167251244
+    },
+    {
+      "magnitude": 1.0000274181365967,
+      "growth_rate": 0.00109671032987535,
+      "frequency_hz": -6.003982167251244
+    },
+    {
+      "magnitude": 1.000126838684082,
+      "growth_rate": 0.00507322559133172,
+      "frequency_hz": 9.006879389306754
+    },
+    {
+      "magnitude": 1.000126838684082,
+      "growth_rate": 0.00507322559133172,
+      "frequency_hz": -9.006879389306754
+    },
+    {
+      "magnitude": 0.9999812245368958,
+      "growth_rate": -0.0007510255672968924,
+      "frequency_hz": 12.00971286293001
+    },
+    {
+      "magnitude": 0.9999812245368958,
+      "growth_rate": -0.0007510255672968924,
+      "frequency_hz": -12.00971286293001
+    },
+    {
+      "magnitude": 0.99994295835495,
+      "growth_rate": -0.0022817307617515326,
+      "frequency_hz": 15.012379376373556
+    },
+    {
+      "magnitude": 0.99994295835495,
+      "growth_rate": -0.0022817307617515326,
+      "frequency_hz": -15.012379376373556
+    },
+    {
+      "magnitude": 0.9994236826896667,
+      "growth_rate": -0.023059336468577385,
+      "frequency_hz": 18.021414661763185
+    },
+    {
+      "magnitude": 0.9994236826896667,
+      "growth_rate": -0.023059336468577385,
+      "frequency_hz": -18.021414661763185
+    },
+    {
+      "magnitude": 0.9866713881492615,
+      "growth_rate": -0.5367293953895569,
+      "frequency_hz": 20.00000055655042
+    }
+  ],
+  "key_parameters": {
+    "dt": 0.025000000000000355,
+    "n_train": 160,
+    "rank_used": 15
+  }
+}

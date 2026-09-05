@@ -1,0 +1,28 @@
+{
+  "metric": "rank_selection",
+  "description": "DMD rank selected by 99% cumulative energy at each training snapshot count",
+  "training_sizes": [
+    20,
+    50,
+    100,
+    160
+  ],
+  "rank_selection": {
+    "20": {
+      "rank_selected": 11
+    },
+    "50": {
+      "rank_selected": 14
+    },
+    "100": {
+      "rank_selected": 14
+    },
+    "160": {
+      "rank_selected": 15
+    }
+  },
+  "key_parameters": {
+    "energy_threshold": 0.99,
+    "t_split": 8.0
+  }
+}

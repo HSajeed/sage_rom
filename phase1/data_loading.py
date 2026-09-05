@@ -69,14 +69,16 @@ class CylinderSnapshots:
 
 
 def load_cylinder_snapshots(
-    t_min: float = 4.0,
+    t_min: float | None = None,
     domain_lower: tuple[float, float] = (0.1, -1.0),
     domain_upper: tuple[float, float] = (0.75, 1.0),
 ) -> CylinderSnapshots:
     """
-    t_min=4.0 matches flowTorch's own tutorials: vortex shedding starts
-    ~t=1.5s and is fully developed by ~t=4s, so snapshots before that are a
-    transient, not the periodic regime you actually want to model/forecast.
+    t_min default (None) selects the first available time step excluding 0,
+    so the snapshot window includes the transient rather than starting at the
+    developed periodic regime. Pass an explicit t_min (e.g. 4.0, which matches
+    flowTorch's own tutorials: vortex shedding starts ~t=1.5s and is fully
+    developed by ~t=4s) to restrict to the post-transient periodic regime.
     domain_lower/upper matches the tutorials' spatial crop (1d before, 7.5d
     after the cylinder center) -- change if you want the full domain, but the
     default keeps this consistent with the documented, verified example.
@@ -95,8 +97,14 @@ def load_cylinder_snapshots(
     loader = FOAMDataloader(path)
 
     all_times = loader.write_times
-    dt = float(all_times[1]) - float(all_times[0])
-    window_times = [t for t in all_times if float(t) >= t_min]
+    if t_min is None:
+        # First available time step excluding 0, so the window includes the
+        # transient (t_min=4.0 in the tutorials deliberately drops it).
+        nonzero = [t for t in all_times if float(t) != 0.0]
+        window_times = nonzero
+    else:
+        window_times = [t for t in all_times if float(t) >= t_min]
+    dt = float(window_times[1]) - float(window_times[0])
 
     vertices = loader.vertices[:, :2]
     mask = mask_box(vertices, lower=list(domain_lower), upper=list(domain_upper))

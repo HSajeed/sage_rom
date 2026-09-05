@@ -54,6 +54,12 @@ class NeuralROMModel:
     latent_dim: int
 
 
+def _resolve_device(device: str | pt.device | None) -> pt.device:
+    if device is not None:
+        return pt.device(device)
+    return pt.device("cuda" if pt.cuda.is_available() else "cpu")
+
+
 def fit_neural_rom(
     data_matrix: pt.Tensor, times: list[float], latent_dim: int,
     epochs: int = 500, lr: float = 1e-3, rollout_horizon: int = 10,
@@ -64,6 +70,7 @@ def fit_neural_rom(
     spaced by dt = times[1]-times[0] (matches this dataset's fixed dt=0.025s).
     Trains on a combination of single-snapshot reconstruction loss and
     short-rollout prediction loss, both against the training window only.
+    Uses CUDA automatically when available (falls back to CPU otherwise).
 
     IMPORTANT, found while testing this against a synthetic fixture: low
     training loss here does NOT imply accurate full-length rollout. The
@@ -83,9 +90,10 @@ def fit_neural_rom(
     """
     n_features, n_snapshots = data_matrix.shape
     dt = times[1] - times[0]
-    x = data_matrix.T   # (n_snapshots, n_features), one row per snapshot
+    device = _resolve_device(None)
+    x = data_matrix.T.to(device)   # (n_snapshots, n_features), one row per snapshot
 
-    net = NeuralROM(n_features, latent_dim)
+    net = NeuralROM(n_features, latent_dim).to(device)
     opt = pt.optim.Adam(net.parameters(), lr=lr)
 
     history = {"loss": []}
@@ -100,7 +108,7 @@ def fit_neural_rom(
         # forward, compare decoded rollout to the true snapshots
         max_start = n_snapshots - rollout_horizon - 1
         if max_start > 0:
-            starts = pt.randint(0, max_start, (min(8, max_start),))
+            starts = pt.randint(0, max_start, (min(8, max_start),), device=device)
             rollout_loss = 0.0
             for s in starts:
                 z0 = net.encode(x[s:s+1])
@@ -110,7 +118,7 @@ def fit_neural_rom(
                 rollout_loss = rollout_loss + ((x_pred - x_true) ** 2).mean()
             rollout_loss = rollout_loss / len(starts)
         else:
-            rollout_loss = pt.tensor(0.0)
+            rollout_loss = pt.tensor(0.0, device=device)
 
         loss = recon_loss + rollout_loss
         loss.backward()
@@ -131,12 +139,14 @@ def forecast(model: NeuralROMModel, last_known_state: pt.Tensor, query_times: li
     forward from the last observation), not how DMD's forecast() works
     (which can evaluate at any time via the closed-form spectral formula)."""
     net = model.net
+    device = next(net.parameters()).device
+    last_state = last_known_state.to(device)
     with pt.no_grad():
-        z0 = net.encode(last_known_state.unsqueeze(0)).squeeze(0)
+        z0 = net.encode(last_state.unsqueeze(0)).squeeze(0)
         n_steps = len(query_times)
         z_traj = net.rollout_latent(z0, n_steps - 1, model.dt)
         x_pred = net.decode(z_traj)   # (n_steps, n_features)
-    return x_pred.T   # (n_features, n_steps), matching data_matrix convention
+    return x_pred.T.cpu()   # (n_features, n_steps), matching data_matrix convention
 
 
 if __name__ == "__main__":

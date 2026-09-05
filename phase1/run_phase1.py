@@ -18,6 +18,13 @@ trusting the comparison table.
 
 from __future__ import annotations
 
+import csv
+import json
+import math
+import pickle
+from datetime import datetime
+from pathlib import Path
+
 import torch as pt
 
 from data_loading import load_cylinder_snapshots, CylinderSnapshots
@@ -75,13 +82,14 @@ def run(snaps: CylinderSnapshots, t_split: float, latent_dim: int = 8) -> dict:
     }
 
     # ---- Neural ROM (black-box latent dynamics, Phase 2's "Arm 1") ----
+    # Using rollout_horizon=30 and epochs=800 for the transient-including window
     def neural_forecast_with_n(n: int) -> pt.Tensor:
         sub_data, sub_times = train.data_matrix[:, :n], train.times[:n]
-        m, _ = fit_neural_rom(sub_data, sub_times, latent_dim=latent_dim, epochs=500)
+        m, _ = fit_neural_rom(sub_data, sub_times, latent_dim=latent_dim, epochs=800, rollout_horizon=30)
         return neural_forecast(m, sub_data[:, -1], test.times)
 
     (neural_model, neural_history), neural_fit_time = time_call(
-        fit_neural_rom, train.data_matrix, train.times, latent_dim, 500
+        fit_neural_rom, train.data_matrix, train.times, latent_dim, 800, rollout_horizon=30
     )
     neural_train_pred = neural_forecast(neural_model, train.data_matrix[:, 0], train.times)
     neural_test_pred = neural_forecast(neural_model, train.data_matrix[:, -1], test.times)
@@ -116,12 +124,154 @@ def run(snaps: CylinderSnapshots, t_split: float, latent_dim: int = 8) -> dict:
     print(f"  NeuralROM:  {neural_curve}")
 
     results["data_efficiency"] = {"DMD": dmd_curve, "NeuralROM": neural_curve}
+
+    # ---- Save results ----
+    _save_results(snaps, results, train, test, rank, dmd_model,
+                  dmd_curve, neural_curve, snapshot_counts, t_split)
+
     return results
+
+
+def _save_results(snaps, results, train, test, rank, dmd_model,
+                  dmd_curve, neural_curve, snapshot_counts, t_split):
+    """Save all result files to the results/ folder."""
+    import flowtorch
+
+    results_dir = Path(__file__).parent / "results"
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    # --- comparison_table.csv ---
+    with open(results_dir / "comparison_table.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["baseline", "reconstruction_err", "extrapolation_err", "fit_time_s"])
+        for name in ["POD", "DMD", "NeuralROM"]:
+            row = results.get(name, {})
+            writer.writerow([
+                name,
+                row.get("reconstruction_err", ""),
+                row.get("extrapolation_err", ""),
+                row.get("fit_time_s", ""),
+            ])
+
+    # --- data_efficiency_dmd.json ---
+    with open(results_dir / "data_efficiency_dmd.json", "w") as f:
+        json.dump({
+            "metric": "extrapolation_error",
+            "description": "DMD extrapolation relative L2 error vs. number of training snapshots used for fitting",
+            "snapshot_counts": snapshot_counts,
+            "errors": dmd_curve,
+            "key_parameters": {
+                "t_split": t_split,
+                "n_train": len(train.times),
+                "n_test": len(test.times),
+                "dt": train.dt,
+            },
+        }, f, indent=2)
+
+    # --- data_efficiency_neuralrom.json ---
+    with open(results_dir / "data_efficiency_neuralrom.json", "w") as f:
+        json.dump({
+            "metric": "extrapolation_error",
+            "description": "NeuralROM extrapolation relative L2 error vs. number of training snapshots used for fitting",
+            "snapshot_counts": snapshot_counts,
+            "errors": neural_curve,
+            "key_parameters": {
+                "t_split": t_split,
+                "n_train": len(train.times),
+                "n_test": len(test.times),
+                "dt": train.dt,
+                "latent_dim": 8,
+                "rollout_horizon": 30,
+                "epochs": 800,
+            },
+        }, f, indent=2)
+
+    # --- pod_reconstruction_vs_rank.csv ---
+    # Compute POD reconstruction error for a range of ranks
+    ranks_to_test = sorted({1, 2, 4, min(rank, train.data_matrix.shape[1] - 1)})
+    pod_errs = reconstruction_error_vs_rank(train.data_matrix, ranks_to_test)
+    with open(results_dir / "pod_reconstruction_vs_rank.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["rank", "relative_reconstruction_error"])
+        for r in sorted(pod_errs.keys()):
+            writer.writerow([r, pod_errs[r]])
+
+    # --- dmd_eigenvalues.csv ---
+    eigvals = dmd_model.dmd.eigvals
+    dt = train.dt
+    eig_rows = []
+    for lam in eigvals:
+        magnitude = abs(lam).item()
+        # continuous-time growth rate: ln(|λ|)/dt
+        growth_rate = float(pt.log(pt.tensor(magnitude)) / dt) if magnitude > 0 else float("-inf")
+        # continuous-time frequency in Hz: angle(λ)/(2π*dt)
+        angle = pt.angle(lam).item()
+        frequency_hz = angle / (2 * pt.pi * dt) if dt > 0 else float("nan")
+        eig_rows.append({
+            "magnitude": magnitude,
+            "growth_rate": growth_rate,
+            "frequency_hz": frequency_hz,
+        })
+    with open(results_dir / "dmd_eigenvalues.json", "w") as f:
+        json.dump({
+            "metric": "dmd_eigenvalues",
+            "description": "DMD eigenvalues with magnitude, continuous-time growth rate, and frequency in Hz",
+            "eigenvalues": eig_rows,
+            "key_parameters": {
+                "dt": dt,
+                "n_train": len(train.times),
+                "rank_used": rank,
+            },
+        }, f, indent=2)
+
+    # --- pod_rank_selection.json ---
+    # Rank selected at each training size n=20, 50, 100, 160
+    training_sizes = [20, 50, 100, min(160, len(train.times))]
+    rank_selection = {}
+    for n in training_sizes:
+        sub_data = train.data_matrix[:, :n]
+        selected_rank = select_rank_by_energy(sub_data, energy_threshold=0.99)
+        selected_rank = min(selected_rank, n - 1)
+        rank_selection[str(n)] = {"rank_selected": selected_rank}
+    with open(results_dir / "pod_rank_selection.json", "w") as f:
+        json.dump({
+            "metric": "rank_selection",
+            "description": "DMD rank selected by 99% cumulative energy at each training snapshot count",
+            "training_sizes": training_sizes,
+            "rank_selection": rank_selection,
+            "key_parameters": {
+                "energy_threshold": 0.99,
+                "t_split": t_split,
+            },
+        }, f, indent=2)
+
+    # --- full_results.pkl ---
+    with open(results_dir / "full_results.pkl", "wb") as f:
+        pickle.dump(results, f)
+
+    # --- run_metadata.json ---
+    metadata = {
+        "timestamp": datetime.now().isoformat(),
+        "dataset_path": str(flowtorch.DATASETS["of_cylinder2D_binary"] if "of_cylinder2D_binary" in flowtorch.DATASETS else "not set"),
+        "t_split": t_split,
+        "dt": train.dt,
+        "n_train": len(train.times),
+        "n_test": len(test.times),
+        "rank_99": rank,
+        "latent_dim": 8,
+        "neuralrom_epochs": 800,
+        "neuralrom_rollout_horizon": 30,
+    }
+    with open(results_dir / "run_metadata.json", "w") as f:
+        json.dump(metadata, f, indent=2)
 
 
 if __name__ == "__main__":
     snaps = load_cylinder_snapshots()   # real data -- requires FLOWTORCH_DATASETS set up
-    # t_split=8.0 gives ~160 training / ~80 test snapshots out of the 241
-    # post-transient (t>=4.0s) snapshots -- adjust once you've looked at the
-    # actual data; this default is a starting point, not a tuned choice.
+    # default window (t_min=None) includes the transient: first non-zero time
+    # step (t=0.025) through t=10.0, 400 snapshots. t_split=8.0 gives ~320
+    # training / ~80 test snapshots from that window -- adjust once you've
+    # looked at the actual data; this default is a starting point, not a
+    # tuned choice. (Pass load_cylinder_snapshots(t_min=4.0) to reproduce
+    # the old 241-snapshot post-transient window.)
     run(snaps, t_split=8.0)

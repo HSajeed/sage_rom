@@ -1,0 +1,25 @@
+{
+  "metric": "extrapolation_error",
+  "description": "NeuralROM extrapolation relative L2 error vs. number of training snapshots used for fitting",
+  "snapshot_counts": [
+    20,
+    50,
+    100,
+    319
+  ],
+  "errors": {
+    "20": 0.4171498417854309,
+    "50": 0.407017320394516,
+    "100": 0.39369824528694153,
+    "319": 0.34500908851623535
+  },
+  "key_parameters": {
+    "t_split": 8.0,
+    "n_train": 319,
+    "n_test": 81,
+    "dt": 0.025,
+    "latent_dim": 8,
+    "rollout_horizon": 30,
+    "epochs": 800
+  }
+}
