@@ -1,9 +1,8 @@
 """
 Loads the flowTorch cylinder2D dataset (real OpenFOAM pimpleFoam run, Re=100,
-401 snapshots at dt=0.025s -- cell count not independently confirmed here,
-check with `loader.vertices.shape[0]` on real data rather than trusting this
-docstring) and assembles a snapshot matrix from
-the VELOCITY field, U.
+401 snapshots at dt=0.025s -- cell count VERIFIED 2026-09-06: 13,678 cells full
+domain, 7,190 in the ROI window; see status.md §10) and assembles a snapshot
+matrix from the VELOCITY field, U.
 
 Why U and not vorticity: flowTorch's own tutorials build their data matrix
 from vorticity because it's a nice single scalar-like quantity for a first
