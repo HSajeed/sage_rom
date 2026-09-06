@@ -225,8 +225,10 @@ def _save_results(snaps, results, train, test, rank, dmd_model,
         }, f, indent=2)
 
     # --- pod_rank_selection.json ---
-    # Rank selected at each training size n=20, 50, 100, 160
-    training_sizes = [20, 50, 100, min(160, len(train.times))]
+    # Rank selected at each training size n=20, 50, 100, n_train -- kept in
+    # sync with the data-efficiency curve above (was min(160, ...) before,
+    # which mislabeled the n_train point as "160").
+    training_sizes = [20, 50, 100, len(train.times)]
     rank_selection = {}
     for n in training_sizes:
         sub_data = train.data_matrix[:, :n]
