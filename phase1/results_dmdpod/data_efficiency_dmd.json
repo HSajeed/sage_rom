@@ -1,0 +1,22 @@
+{
+  "metric": "extrapolation_error",
+  "description": "DMD extrapolation relative L2 error vs. number of training snapshots used for fitting",
+  "snapshot_counts": [
+    20,
+    50,
+    100,
+    319
+  ],
+  "errors": {
+    "20": 0.36001071333885193,
+    "50": 10.345019340515137,
+    "100": 3.3996694087982178,
+    "319": 6029298688.0
+  },
+  "key_parameters": {
+    "t_split": 8.0,
+    "n_train": 319,
+    "n_test": 81,
+    "dt": 0.025
+  }
+}

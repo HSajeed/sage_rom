@@ -33,34 +33,12 @@ from pathlib import Path
 import torch as pt
 
 from data_loading import load_cylinder_snapshots
-from dmd_baseline import fit_dmd, forecast as dmd_forecast
+from dmd_baseline import fit_dmd, forecast as dmd_forecast, eigen_summary
 from pod_baseline import fit_pod
 from metrics import relative_l2_error, print_summary_table
 
 RANK = 15
 T_SPLIT = 8.0
-
-
-def _eigen_table(model, dt: float) -> dict:
-    eig_rows = []
-    n_unstable = 0
-    for lam in model.dmd.eigvals:
-        magnitude = abs(lam).item()
-        growth_rate = float(pt.log(pt.tensor(magnitude)) / dt) if magnitude > 0 else float("-inf")
-        angle = pt.angle(lam).item()
-        frequency_hz = angle / (2 * pt.pi * dt) if dt > 0 else float("nan")
-        if magnitude > 1.0:
-            n_unstable += 1
-        eig_rows.append({
-            "magnitude": magnitude,
-            "growth_rate": growth_rate,
-            "frequency_hz": frequency_hz,
-        })
-    dominant = sorted(
-        (r for r in eig_rows if r["magnitude"] > 1.0),
-        key=lambda r: r["magnitude"], reverse=True,
-    )[:5]
-    return {"eigenvalues": eig_rows, "n_unstable": n_unstable, "dominant_unstable": dominant}
 
 
 def main() -> None:
@@ -84,7 +62,7 @@ def main() -> None:
     pod_recon_err = relative_l2_error(pod.reconstruct(RANK), train.data_matrix)
 
     # ---- eigenvalue survey at this rank ----
-    eig = _eigen_table(model, train.dt)
+    eig = eigen_summary(model)
 
     results_json = {
         "experiment": "fixed_low_rank_dmd_transient_window",

@@ -4,6 +4,11 @@ data_loading.py for setup), splits into a training window and a held-out
 extrapolation window, fits POD / DMD / the neural ROM baseline, and prints
 the comparison table across the four metrics.
 
+Default run is POD + DMD only (NeuralROM is parked -- pass --with-neural to
+re-enable it). DMD is additionally swept over a fixed-rank ladder
+[1, 2, 4, 8, 15, 32, rank_99] to locate where the rank-63 blowup onsets vs.
+the stable-but-mediocre low-rank regime (see status.md §8.4 / future.md).
+
 RUN THIS YOURSELF once flowTorch and the dataset are set up -- this
 scaffold verifies each component against synthetic data (see
 test_synthetic.py and each module's own `if __name__` block) but does not
@@ -29,12 +34,15 @@ import torch as pt
 
 from data_loading import load_cylinder_snapshots, CylinderSnapshots
 from pod_baseline import fit_pod, select_rank_by_energy, reconstruction_error_vs_rank
-from dmd_baseline import fit_dmd, forecast as dmd_forecast
+from dmd_baseline import fit_dmd, forecast as dmd_forecast, eigen_summary
 from neural_rom_baseline import fit_neural_rom, forecast as neural_forecast
 from metrics import relative_l2_error, time_call, data_efficiency_curve, print_summary_table
 
+SWEEP_RANKS_BASE = (1, 2, 4, 8, 15, 32)
 
-def run(snaps: CylinderSnapshots, t_split: float, latent_dim: int = 8) -> dict:
+
+def run(snaps: CylinderSnapshots, t_split: float, latent_dim: int = 8,
+        with_neural: bool = False, output_dir: str = "results") -> dict:
     train, test = snaps.split(t_split)
     n_train, n_test = len(train.times), len(test.times)
     print(f"Train: {n_train} snapshots (t < {t_split}s)   "
@@ -81,25 +89,54 @@ def run(snaps: CylinderSnapshots, t_split: float, latent_dim: int = 8) -> dict:
         "fit_time_s": dmd_fit_time,
     }
 
+    # ---- DMD rank sweep: extrapolation error vs. fixed rank ----
+    # Fixed-rank fits (no energy selection) spanning below/above the Expt-1
+    # rank (15) up to this window's energy-selected rank_99 (63). Locates
+    # where the canonical rank-63 blowup onsets vs. the stable but mediocre
+    # low-rank regime (recon 0.27 / extrap 0.30 at rank 15).
+    sweep_ranks = sorted(set([*SWEEP_RANKS_BASE, rank]))
+    dmd_sweep: dict = {}
+    print(f"\nDMD rank sweep (fixed rank, no energy selection): {sweep_ranks}")
+    for r in sweep_ranks:
+        (m, fit_time) = time_call(fit_dmd, train.data_matrix, train.times, r)
+        full = dmd_forecast(m, train.data_matrix[:, 0], n_train + n_test - 1)
+        dmd_sweep[str(r)] = {
+            "rank": r,
+            "reconstruction_err": relative_l2_error(full[:, :n_train], train.data_matrix),
+            "extrapolation_err": relative_l2_error(full[:, n_train:], test.data_matrix),
+            "fit_time_s": fit_time,
+            "eigen_summary": eigen_summary(m),
+        }
+        print(f"  rank={r:>2}  recon={dmd_sweep[str(r)]['reconstruction_err']:.6e}  "
+              f"extrap={dmd_sweep[str(r)]['extrapolation_err']:.6e}  "
+              f"n_unstable={dmd_sweep[str(r)]['eigen_summary']['n_unstable']}")
+    results["dmd_rank_sweep"] = dmd_sweep
+
     # ---- Neural ROM (black-box latent dynamics, Phase 2's "Arm 1") ----
-    # Using rollout_horizon=30 and epochs=800 for the transient-including window
-    def neural_forecast_with_n(n: int) -> pt.Tensor:
-        sub_data, sub_times = train.data_matrix[:, :n], train.times[:n]
-        m, _ = fit_neural_rom(sub_data, sub_times, latent_dim=latent_dim, epochs=800, rollout_horizon=30)
-        return neural_forecast(m, sub_data[:, -1], test.times)
+    # PARKED (2026-09-06): oversized-for-data black-box with no physical
+    # hard constraint; inferior to POD/DMD. Code kept, gated behind
+    # --with-neural so it can be re-enabled without surgery.
+    if with_neural:
+        # Using rollout_horizon=30 and epochs=800 for the transient-including window
+        def neural_forecast_with_n(n: int) -> pt.Tensor:
+            sub_data, sub_times = train.data_matrix[:, :n], train.times[:n]
+            m, _ = fit_neural_rom(sub_data, sub_times, latent_dim=latent_dim, epochs=800, rollout_horizon=30)
+            return neural_forecast(m, sub_data[:, -1], test.times)
 
-    (neural_model, neural_history), neural_fit_time = time_call(
-        fit_neural_rom, train.data_matrix, train.times, latent_dim, 800, rollout_horizon=30
-    )
-    neural_train_pred = neural_forecast(neural_model, train.data_matrix[:, 0], train.times)
-    neural_test_pred = neural_forecast(neural_model, train.data_matrix[:, -1], test.times)
-    results["NeuralROM"] = {
-        "reconstruction_err": relative_l2_error(neural_train_pred, train.data_matrix),
-        "extrapolation_err": relative_l2_error(neural_test_pred, test.data_matrix),
-        "fit_time_s": neural_fit_time,
-    }
+        (neural_model, neural_history), neural_fit_time = time_call(
+            fit_neural_rom, train.data_matrix, train.times, latent_dim, 800, rollout_horizon=30
+        )
+        neural_train_pred = neural_forecast(neural_model, train.data_matrix[:, 0], train.times)
+        neural_test_pred = neural_forecast(neural_model, train.data_matrix[:, -1], test.times)
+        results["NeuralROM"] = {
+            "reconstruction_err": relative_l2_error(neural_train_pred, train.data_matrix),
+            "extrapolation_err": relative_l2_error(neural_test_pred, test.data_matrix),
+            "fit_time_s": neural_fit_time,
+        }
+    else:
+        neural_curve = None
 
-    print_summary_table(results)
+    print_summary_table({k: results[k] for k in ("POD", "DMD", "NeuralROM") if k in results})
 
     # ---- Data efficiency: extrapolation error vs. number of training
     # snapshots used, for the two baselines that actually forecast ----
@@ -120,31 +157,36 @@ def run(snaps: CylinderSnapshots, t_split: float, latent_dim: int = 8) -> dict:
     print(f"\nData efficiency (extrapolation error vs. training snapshots used): {snapshot_counts}")
     dmd_curve = data_efficiency_curve(dmd_forecast_with_n, test.data_matrix, snapshot_counts)
     print(f"  DMD:        {dmd_curve}")
-    neural_curve = data_efficiency_curve(neural_forecast_with_n, test.data_matrix, snapshot_counts)
-    print(f"  NeuralROM:  {neural_curve}")
-
-    results["data_efficiency"] = {"DMD": dmd_curve, "NeuralROM": neural_curve}
+    if with_neural:
+        neural_curve = data_efficiency_curve(neural_forecast_with_n, test.data_matrix, snapshot_counts)
+        print(f"  NeuralROM:  {neural_curve}")
+        results["data_efficiency"] = {"DMD": dmd_curve, "NeuralROM": neural_curve}
+    else:
+        results["data_efficiency"] = {"DMD": dmd_curve}
 
     # ---- Save results ----
     _save_results(snaps, results, train, test, rank, dmd_model,
-                  dmd_curve, neural_curve, snapshot_counts, t_split)
+                  dmd_curve, neural_curve, snapshot_counts, t_split,
+                  dmd_sweep, output_dir, with_neural)
 
     return results
 
 
 def _save_results(snaps, results, train, test, rank, dmd_model,
-                  dmd_curve, neural_curve, snapshot_counts, t_split):
-    """Save all result files to the results/ folder."""
+                  dmd_curve, neural_curve, snapshot_counts, t_split,
+                  dmd_sweep, output_dir="results", with_neural=False):
+    """Save all result files to the given output folder (default results/)."""
     import flowtorch
 
-    results_dir = Path(__file__).parent / "results"
+    results_dir = Path(__file__).parent / output_dir
     results_dir.mkdir(parents=True, exist_ok=True)
 
     # --- comparison_table.csv ---
     with open(results_dir / "comparison_table.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["baseline", "reconstruction_err", "extrapolation_err", "fit_time_s"])
-        for name in ["POD", "DMD", "NeuralROM"]:
+        baseline_names = ["POD", "DMD"] + (["NeuralROM"] if with_neural else [])
+        for name in baseline_names:
             row = results.get(name, {})
             writer.writerow([
                 name,
@@ -168,23 +210,24 @@ def _save_results(snaps, results, train, test, rank, dmd_model,
             },
         }, f, indent=2)
 
-    # --- data_efficiency_neuralrom.json ---
-    with open(results_dir / "data_efficiency_neuralrom.json", "w") as f:
-        json.dump({
-            "metric": "extrapolation_error",
-            "description": "NeuralROM extrapolation relative L2 error vs. number of training snapshots used for fitting",
-            "snapshot_counts": snapshot_counts,
-            "errors": neural_curve,
-            "key_parameters": {
-                "t_split": t_split,
-                "n_train": len(train.times),
-                "n_test": len(test.times),
-                "dt": train.dt,
-                "latent_dim": 8,
-                "rollout_horizon": 30,
-                "epochs": 800,
-            },
-        }, f, indent=2)
+    # --- data_efficiency_neuralrom.json (only when NeuralROM enabled) ---
+    if with_neural:
+        with open(results_dir / "data_efficiency_neuralrom.json", "w") as f:
+            json.dump({
+                "metric": "extrapolation_error",
+                "description": "NeuralROM extrapolation relative L2 error vs. number of training snapshots used for fitting",
+                "snapshot_counts": snapshot_counts,
+                "errors": neural_curve,
+                "key_parameters": {
+                    "t_split": t_split,
+                    "n_train": len(train.times),
+                    "n_test": len(test.times),
+                    "dt": train.dt,
+                    "latent_dim": 8,
+                    "rollout_horizon": 30,
+                    "epochs": 800,
+                },
+            }, f, indent=2)
 
     # --- pod_reconstruction_vs_rank.csv ---
     # Compute POD reconstruction error for a range of ranks
@@ -224,6 +267,39 @@ def _save_results(snaps, results, train, test, rank, dmd_model,
             },
         }, f, indent=2)
 
+    # --- dmd_error_vs_rank.csv ---
+    # Fixed-rank sweep: error vs. rank over the same transient window.
+    sweep_ranks = sorted(int(k) for k in dmd_sweep.keys())
+    with open(results_dir / "dmd_error_vs_rank.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["rank", "reconstruction_err", "extrapolation_err", "fit_time_s"])
+        for r in sweep_ranks:
+            row = dmd_sweep[str(r)]
+            writer.writerow([r, row["reconstruction_err"], row["extrapolation_err"], row["fit_time_s"]])
+
+    # --- dmd_rank_sweep.json ---
+    # Per-rank errors plus eigenvalue diagnostics (n_unstable, dominant
+    # unstable modes) -- the artifact that locates where the rank-63 blowup
+    # onsets vs. the stable-but-mediocre low-rank regime.
+    sweep_json = {
+        "metric": "dmd_rank_sweep",
+        "description": "Fixed-rank DMD errors and eigenvalue diagnostics on the transient window, no energy selection",
+        "ranks": sweep_ranks,
+        "per_rank": {
+            r: {k: v for k, v in dmd_sweep[str(r)].items() if k != "rank"}
+            for r in sweep_ranks
+        },
+        "key_parameters": {
+            "t_split": t_split,
+            "n_train": len(train.times),
+            "n_test": len(test.times),
+            "dt": train.dt,
+            "rank_99": rank,
+        },
+    }
+    with open(results_dir / "dmd_rank_sweep.json", "w") as f:
+        json.dump(sweep_json, f, indent=2)
+
     # --- pod_rank_selection.json ---
     # Rank selected at each training size n=20, 50, 100, n_train -- kept in
     # sync with the data-efficiency curve above (was min(160, ...) before,
@@ -260,15 +336,32 @@ def _save_results(snaps, results, train, test, rank, dmd_model,
         "n_train": len(train.times),
         "n_test": len(test.times),
         "rank_99": rank,
-        "latent_dim": 8,
-        "neuralrom_epochs": 800,
-        "neuralrom_rollout_horizon": 30,
+        "dmd_rank_sweep": sweep_ranks,
+        "with_neural": with_neural,
+        "output_dir": output_dir,
     }
+    if with_neural:
+        metadata.update({
+            "latent_dim": 8,
+            "neuralrom_epochs": 800,
+            "neuralrom_rollout_horizon": 30,
+        })
     with open(results_dir / "run_metadata.json", "w") as f:
         json.dump(metadata, f, indent=2)
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Phase 1 baselines on the real cylinder2D transient window: POD + DMD (rank sweep).",
+    )
+    parser.add_argument("--with-neural", action="store_true",
+                        help="also fit the NeuralROM baseline (default OFF -- parked 2026-09-06)")
+    parser.add_argument("--output-dir", default="results",
+                        help="output folder under phase1/ (default: results)")
+    args = parser.parse_args()
+
     snaps = load_cylinder_snapshots()   # real data -- requires FLOWTORCH_DATASETS set up
     # default window (t_min=None) includes the transient: first non-zero time
     # step (t=0.025) through t=10.0, 400 snapshots. t_split=8.0 gives ~320
@@ -276,4 +369,4 @@ if __name__ == "__main__":
     # looked at the actual data; this default is a starting point, not a
     # tuned choice. (Pass load_cylinder_snapshots(t_min=4.0) to reproduce
     # the old 241-snapshot post-transient window.)
-    run(snaps, t_split=8.0)
+    run(snaps, t_split=8.0, with_neural=args.with_neural, output_dir=args.output_dir)

@@ -48,6 +48,33 @@ def forecast(model: DMDModel, initial_condition: pt.Tensor, n_steps: int) -> pt.
     return model.dmd.predict(initial_condition, n_steps)
 
 
+def eigen_summary(model: DMDModel) -> dict:
+    """Eigenvalue diagnostics for a fitted DMD model: per-eigenvalue
+    magnitude, continuous-time growth rate ln(|λ|)/dt, and frequency
+    angle(λ)/(2pi*dt) Hz, plus counts and the dominant unstable modes.
+    Shared by run_phase1.py's rank sweep and run_fixed_rank_dmd.py."""
+    dt = model.dt
+    eig_rows = []
+    n_unstable = 0
+    for lam in model.dmd.eigvals:
+        magnitude = abs(lam).item()
+        growth_rate = float(pt.log(pt.tensor(magnitude)) / dt) if magnitude > 0 else float("-inf")
+        angle = pt.angle(lam).item()
+        frequency_hz = angle / (2 * pt.pi * dt) if dt > 0 else float("nan")
+        if magnitude > 1.0:
+            n_unstable += 1
+        eig_rows.append({
+            "magnitude": magnitude,
+            "growth_rate": growth_rate,
+            "frequency_hz": frequency_hz,
+        })
+    dominant = sorted(
+        (r for r in eig_rows if r["magnitude"] > 1.0),
+        key=lambda r: r["magnitude"], reverse=True,
+    )[:5]
+    return {"eigenvalues": eig_rows, "n_unstable": n_unstable, "dominant_unstable": dominant}
+
+
 if __name__ == "__main__":
     from test_synthetic import make_synthetic_snapshots
     from pod_baseline import select_rank_by_energy
