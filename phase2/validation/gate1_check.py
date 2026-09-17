@@ -19,6 +19,7 @@ import sys
 import yaml
 
 from extractor.ast_parser import extract_calls
+from extractor.ontology import resolve_label
 
 
 def load_ground_truth(path: str) -> dict:
@@ -26,7 +27,12 @@ def load_ground_truth(path: str) -> dict:
         return yaml.safe_load(f)
 
 
-def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: bool = False) -> int:
+def run_gate1(
+    source_path: str,
+    ground_truth_path: str,
+    include_unqualified: bool = False,
+    strict_labels: bool = False,
+) -> int:
     gt = load_ground_truth(ground_truth_path)
     # Multi-file fixtures (e.g. pimpleFoam_v2006: UEqn.H, pEqn.H, ...) tag
     # each entry with its own `source_file`; score only the entries for the
@@ -60,6 +66,7 @@ def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: boo
         pool_by_line.setdefault(c.line_start, []).append(c)
 
     tp_calls, tp_types, mismatches, missed = [], [], [], []
+    tp_matches: list[tuple[dict, "ExtractedCall"]] = []  # (entry, matched call)
 
     for entry in gt_entries:
         line = entry["line"]
@@ -72,6 +79,7 @@ def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: boo
         if match is not None:
             candidates.remove(match)
             tp_calls.append(entry)
+            tp_matches.append((entry, match))
             if match.arguments == entry.get("arguments", []):
                 tp_types.append(entry)
         elif candidates:
@@ -91,6 +99,38 @@ def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: boo
     precision = len(tp_calls) / len(extracted) if extracted else float("nan")
     arg_exact_rate = len(tp_types) / len(tp_calls) if tp_calls else float("nan")
 
+    # Label agreement: compare the extractor's operand-aware physical_type
+    # and discretization_role against the ground truth, for matched calls
+    # whose GT scope is an actual operator label (operator/operator_argument)
+    # or has no scope field at all (single-file keys like icoFoam's, which
+    # predate the scope field and are entirely operator-scope). This is the
+    # check Gate 1 was missing: call-identity matching alone can't catch a
+    # mislabeled physical_type/discretization_role.
+    label_checked = [
+        (entry, match) for entry, match in tp_matches
+        if entry.get("scope") in (None, "operator", "operator_argument")
+    ]
+    type_mismatches: list[tuple[dict, str | None]] = []
+    role_mismatches: list[tuple[dict, str | None]] = []
+    for entry, match in label_checked:
+        meaning = resolve_label(
+            match.namespace, match.function, match.arguments,
+            receiver=match.receiver, access=match.access,
+        )
+        got_type = meaning.physical_type if meaning else None
+        got_role = meaning.discretization_role if meaning else None
+        if "physical_type" in entry and got_type != entry["physical_type"]:
+            type_mismatches.append((entry, got_type))
+        if "discretization_role" in entry and got_role != entry["discretization_role"]:
+            role_mismatches.append((entry, got_role))
+
+    n_label_checked = len(label_checked)
+    type_agree = n_label_checked - len(type_mismatches)
+    role_checked = [e for e, _ in label_checked if "discretization_role" in e]
+    role_agree = len(role_checked) - len(role_mismatches)
+    type_rate = type_agree / n_label_checked if n_label_checked else float("nan")
+    role_rate = role_agree / len(role_checked) if role_checked else float("nan")
+
     print(f"Source:        {source_path}")
     print(f"Ground truth:  {ground_truth_path} ({n_gt} entries, "
           f"{n_gt - len(unreviewed)} reviewed)")
@@ -99,6 +139,23 @@ def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: boo
     print(f"Precision (call identity):    {precision:.2%}  ({len(tp_calls)}/{len(extracted)})")
     print(f"Argument exact-match rate:    {arg_exact_rate:.2%}  "
           f"(among matched calls, {len(tp_types)}/{len(tp_calls)})")
+    print(f"Label agreement (physical_type): {type_rate:.2%}  ({type_agree}/{n_label_checked})")
+    print(f"Role agreement (discretization_role): {role_rate:.2%}  ({role_agree}/{len(role_checked)})")
+
+    if type_mismatches:
+        print(f"\nLABEL MISMATCHES ({len(type_mismatches)}):")
+        for entry, got in type_mismatches:
+            print(
+                f"  line {entry['line']}: {entry['namespace']}::{entry['function']} "
+                f"expected physical_type={entry['physical_type']!r}, got {got!r}"
+            )
+    if role_mismatches:
+        print(f"\nROLE MISMATCHES ({len(role_mismatches)}):")
+        for entry, got in role_mismatches:
+            print(
+                f"  line {entry['line']}: {entry['namespace']}::{entry['function']} "
+                f"expected discretization_role={entry['discretization_role']!r}, got {got!r}"
+            )
 
     if mismatches:
         print(f"\nMISMATCHES ({len(mismatches)}):")
@@ -115,7 +172,9 @@ def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: boo
         for c in extra:
             print(f"  line {c.line_start}: {c.qualified_name}({', '.join(c.arguments)})")
 
-    return 0 if (not mismatches and not missed) else 1
+    call_identity_failed = bool(mismatches or missed)
+    label_failed = strict_labels and bool(type_mismatches or role_mismatches)
+    return 0 if not (call_identity_failed or label_failed) else 1
 
 
 if __name__ == "__main__":
@@ -125,5 +184,13 @@ if __name__ == "__main__":
     parser.add_argument("--include-unqualified", action="store_true",
                          help="Also extract unqualified (member/free-function) calls, "
                               "for multi-file fixtures whose ground truth includes them.")
+    parser.add_argument("--strict-labels", action="store_true",
+                         help="Non-zero exit on physical_type/discretization_role "
+                              "mismatches, not just call-identity mismatches/misses "
+                              "(default: report only, don't fail the run).")
     args = parser.parse_args()
-    sys.exit(run_gate1(args.source, args.ground_truth, include_unqualified=args.include_unqualified))
+    sys.exit(run_gate1(
+        args.source, args.ground_truth,
+        include_unqualified=args.include_unqualified,
+        strict_labels=args.strict_labels,
+    ))

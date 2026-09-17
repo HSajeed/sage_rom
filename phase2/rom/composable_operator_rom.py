@@ -146,11 +146,30 @@ _PHYSICAL_TYPE_TO_FORM = {
     "temporal_flux_correction": "linear",
     "source_implicit": "linear",
     "source_semi_implicit": "mlp",
+    # operand-aware labels added by ontology.resolve_label (see
+    # validation/ground_truth_pimpleFoam_v2006.yaml / labeling_notes):
+    "viscous_stress_divergence_explicit": "linear",
+    "pressure_gradient_face_normal": "linear",
+    "user_source": "mlp",
+    "mrf_coriolis_source": "linear",
 }
 _SKIP_TYPES = {"time_derivative"}  # handled by the integrator itself, not an RHS block
 
+# physical_types that are only ever `term_kind: argument` (nested
+# sub-expressions such as the velocity gradient inside a viscous-stress
+# divergence, or an operator_argument's own type) -- they must never reach
+# this ROM as a standalone block. physical_terms() already excludes nodes
+# with `nested_in` set, so this only fires if that invariant is broken;
+# treat it as a bug in the caller, not a silently-skipped block.
+_ARGUMENT_ONLY_TYPES = {
+    "velocity_gradient", "gradient", "effective_viscosity",
+    "deviatoric_part_2", "tensor_transpose",
+}
 
-def build_from_operator_graph(graph, collapse_duplicates: bool = True) -> list[OperatorSpec]:
+
+def build_from_operator_graph(
+    graph, collapse_duplicates: bool = True, equation: str | None = None,
+) -> list[OperatorSpec]:
     # Prefer the graph's leaf equation terms (physical_terms) when the graph
     # was built with expand_dispatch/nesting detection -- this excludes
     # dispatch call sites that were replaced by their expansion, and nested
@@ -158,8 +177,13 @@ def build_from_operator_graph(graph, collapse_duplicates: bool = True) -> list[O
     # to every node for graphs without those attributes (e.g. plain
     # build_operator_graph(icoFoam.C) with no dispatch/nesting), which is
     # exactly the previous behaviour -- see extractor.operator_graph.physical_terms.
-    from extractor.operator_graph import physical_terms
-    nodes = physical_terms(graph)
+    # `equation`: restrict to one equation's terms (e.g. "UEqn"/"tUEqn") via
+    # extractor.operator_graph.equation_terms, for a multi-file graph that
+    # holds several equations (e.g. pimpleFoam's UEqn + pEqn together) --
+    # default None keeps the whole-graph behaviour (icoFoam: 7 blocks)
+    # unchanged.
+    from extractor.operator_graph import physical_terms, equation_terms
+    nodes = equation_terms(graph, equation) if equation is not None else physical_terms(graph)
 
     specs: list[OperatorSpec] = []
     seen_types: set[str] = set()
@@ -167,6 +191,11 @@ def build_from_operator_graph(graph, collapse_duplicates: bool = True) -> list[O
         ptype = data["physical_type"]
         if ptype in _SKIP_TYPES:
             continue
+        assert ptype not in _ARGUMENT_ONLY_TYPES, (
+            f"{node_id} ({data['qualified_name']}) has physical_type={ptype!r}, "
+            "which is argument/coefficient-only and should have been excluded "
+            "by physical_terms() (nested_in set) before reaching the ROM."
+        )
         if collapse_duplicates and ptype in seen_types:
             continue  # e.g. two "diffusion"-typed nodes (velocity diffusion,
             # pressure Poisson) collapse to one latent block by default --

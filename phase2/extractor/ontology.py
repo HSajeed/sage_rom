@@ -91,10 +91,10 @@ ONTOLOGY: dict[str, dict[str, OperatorMeaning]] = {
         ),
         "snGrad": OperatorMeaning(
             "surface_normal_gradient", "explicit",
-            "PROPOSED -- needs human review. Surface-normal gradient "
-            "evaluated on faces (e.g. the SIMPLEC pressure-flux term in "
-            "pEqn.H); not yet confirmed against upstream source by a human "
-            "reviewer."
+            "Confirmed: Programmer's Guide v2512 Sec 3.4.6 eq 3.28 and "
+            "Table 3.2 cover the surface-normal gradient. Operand-aware "
+            "callers should use resolve_label() instead, which returns "
+            "'pressure_gradient_face_normal' for snGrad(p)."
         ),
         "makeRelative": OperatorMeaning(
             "mesh_motion_flux_adjustment", "explicit",
@@ -159,3 +159,214 @@ def lookup(namespace: str, function: str) -> OperatorMeaning | None:
 
 def is_known_namespace(namespace: str) -> bool:
     return namespace in ONTOLOGY
+
+
+# ---------------------------------------------------------------------------
+# Operand-aware labeling (owner policy 2026-09-17, see
+# validation/ground_truth_pimpleFoam_v2006.yaml top-of-file rules and
+# validation/labeling_notes_pimpleFoam_v2006.md "Labeling policy" /
+# "Ontology changes implied"). `resolve_label` supersedes the flat
+# (namespace, function) -> meaning table above for callers that can supply
+# arguments/receiver -- it decides physical_type = operator + operand
+# (what the term IS in context), not just the DSL call name.
+#
+# Known limits (documented, not fixed): operand detection below is purely
+# syntactic string matching on the normalized argument text -- it has no
+# field-type information. A flux field that doesn't follow the `phi*`
+# naming convention won't be recognized as a flux; a non-flux field that
+# happens to be named `phi*` will be misdetected as one. Same caveat for
+# the `nuEff`/`dev`/`dev2` substring check used to spot the viscous-stress
+# argument of fvc::div.
+# ---------------------------------------------------------------------------
+
+
+def _normalize_operand(text: str) -> str:
+    """
+    Simple syntactic normalization of an argument's source text for operand
+    matching: strip surrounding whitespace, drop internal spaces, strip
+    `this->` member-access prefixes, and drop a trailing empty-call `()`
+    (e.g. `this->nuEff()` -> `nuEff`, `this->U_` -> `U_`).
+    """
+    a = text.strip().replace(" ", "").replace("this->", "")
+    if a.endswith("()"):
+        a = a[:-2]
+    return a
+
+
+def _is_pressure_field(operand: str) -> bool:
+    return operand in ("p", "p_rgh")
+
+
+def _is_velocity_field(operand: str) -> bool:
+    return operand in ("U", "U_")
+
+
+def _looks_like_face_flux(operand: str) -> bool:
+    """Known limit: naming-convention heuristic only, see module note above."""
+    return operand.startswith("phi")
+
+
+def _looks_like_viscous_stress_arg(operand: str) -> bool:
+    """Known limit: substring heuristic only, see module note above."""
+    return "nuEff" in operand or "dev2(" in operand or "dev(" in operand
+
+
+def _resolve_grad(function: str, arguments: list[str]) -> OperatorMeaning | None:
+    operand = _normalize_operand(arguments[0]) if arguments else ""
+    if function == "grad":
+        if _is_pressure_field(operand):
+            return OperatorMeaning(
+                "pressure_gradient", "explicit",
+                "Operand-aware: fvc::grad(p) is the pressure-gradient term "
+                "(matches the reviewed icoFoam fvi::grad(p) label)."
+            )
+        if _is_velocity_field(operand):
+            return OperatorMeaning(
+                "velocity_gradient", "explicit",
+                "Operand-aware: fvc::grad(U) -- gradient of the velocity "
+                "field, not the pressure-gradient coupling term."
+            )
+        return OperatorMeaning(
+            "gradient", "explicit",
+            "Operand-aware: generic fvc::grad of a field that is neither "
+            "the pressure nor the velocity."
+        )
+    if function == "snGrad":
+        if _is_pressure_field(operand):
+            return OperatorMeaning(
+                "pressure_gradient_face_normal", "explicit",
+                "Operand-aware: fvc::snGrad(p), the face-normal pressure "
+                "gradient (e.g. the SIMPLEC flux-consistency term)."
+            )
+        return OperatorMeaning(
+            "surface_normal_gradient", "explicit",
+            "Operand-aware: fvc::snGrad of a non-pressure field."
+        )
+    return None
+
+
+def _resolve_fvc_div(arguments: list[str]) -> OperatorMeaning:
+    if len(arguments) == 2:
+        return OperatorMeaning(
+            "convection", "explicit",
+            "Operand-aware: two-argument fvc::div(flux, field) is the "
+            "explicit convective transport term."
+        )
+    operand = _normalize_operand(arguments[0]) if arguments else ""
+    if _looks_like_viscous_stress_arg(operand):
+        return OperatorMeaning(
+            "viscous_stress_divergence_explicit", "explicit",
+            "Operand-aware: single-argument fvc::div of a viscous-stress "
+            "tensor expression (contains nuEff/dev/dev2)."
+        )
+    return OperatorMeaning(
+        "flux_divergence", "explicit",
+        "Operand-aware: single-argument fvc::div of a face-flux-typed "
+        "field (surfaceIntegrate), distinct from convection per the "
+        "guide's Divergence vs Convection sections."
+    )
+
+
+# receiver-keyed table for unqualified (namespace == "") operator calls,
+# see labeling_notes_pimpleFoam_v2006.md "Ontology changes implied" #7-#8.
+_RECEIVER_TABLE: dict[tuple[str | None, str], OperatorMeaning] = {
+    ("MRF", "DDt"): OperatorMeaning(
+        "mrf_coriolis_source", "explicit",
+        "MRFZoneList::DDt(U) -- Coriolis acceleration source, explicit "
+        "volField added to the matrix."
+    ),
+    (None, "fvOptions"): OperatorMeaning(
+        "user_source", "implicit_or_explicit",
+        "fv::optionList::operator()(U) builds an fvMatrix from each "
+        "option's addSup -- not necessarily explicit."
+    ),
+    ("fvOptions", "fvOptions"): OperatorMeaning(
+        "user_source", "implicit_or_explicit",
+        "fv::optionList::operator()(U) builds an fvMatrix from each "
+        "option's addSup -- not necessarily explicit."
+    ),
+    ("turbulence", "divDevReff"): OperatorMeaning(
+        "viscous_stress_divergence", "implicit+explicit",
+        "Forwarding node (Rule 3): the whole deviatoric viscous term, "
+        "expanded by dispatch.py into its implicit/explicit parts."
+    ),
+    (None, "divDevRhoReff"): OperatorMeaning(
+        "viscous_stress_divergence", "implicit+explicit",
+        "Forwarding node (Rule 3): same physical term as divDevReff, "
+        "must not be counted as a second viscous term."
+    ),
+    (None, "nuEff"): OperatorMeaning(
+        "effective_viscosity", "coefficient",
+        "Coefficient (Gamma of the Laplacian / the viscous-stress "
+        "argument), not a discretized operator."
+    ),
+    ("this", "nuEff"): OperatorMeaning(
+        "effective_viscosity", "coefficient",
+        "Coefficient (Gamma of the Laplacian / the viscous-stress "
+        "argument), not a discretized operator."
+    ),
+    (None, "dev2"): OperatorMeaning(
+        "deviatoric_part_2", "algebraic",
+        "dev2(A) = A - (2/3)tr(A)I, pointwise tensor algebra."
+    ),
+    (None, "T"): OperatorMeaning(
+        "tensor_transpose", "algebraic",
+        "Pointwise tensor transpose, (A^T)_ij = A_ji."
+    ),
+}
+
+# Unqualified/qualified calls that are bookkeeping (matrix/flux
+# manipulation, mesh-motion frame changes on a static mesh, etc.), never an
+# operator label. Returning None here (rather than a "bookkeeping"
+# physical_type) keeps resolve_label's contract simple -- "None" already
+# means "this call is not an operator label the ontology assigns", exactly
+# as it does for any other unrecognized call; detect_modification.py's
+# "UNRECOGNIZED -> route to LLM/human review" framing still applies (these
+# calls just happen to be legitimately non-physical, not merely unmapped).
+_BOOKKEEPING_FUNCTIONS = {
+    ("fvc", "makeRelative"), ("fvc", "makeAbsolute"), ("fvc", "correctUf"),
+}
+
+
+def is_bookkeeping_call(namespace: str, function: str) -> bool:
+    """
+    True for calls resolve_label deliberately labels as non-operator
+    bookkeeping (fvc::makeRelative/makeAbsolute/correctUf) -- lets a caller
+    (operator_graph.py) distinguish "known bookkeeping" from "genuinely
+    unrecognized" even though resolve_label returns None for both.
+    """
+    return (namespace, function) in _BOOKKEEPING_FUNCTIONS
+
+
+def resolve_label(
+    namespace: str,
+    function: str,
+    arguments: list[str],
+    receiver: str | None = None,
+    access: str | None = None,
+) -> OperatorMeaning | None:
+    """
+    Operand-aware physical_type/discretization_role resolution: physical_type
+    = operator + operand, per the owner labeling policy (see module docstring
+    above this function). Falls back to the flat `lookup()` table for
+    namespace/function combinations that have no operand-aware rule (fvm::,
+    fvi::, and the remaining fvc:: entries) so all previously-labeled call
+    sites keep their existing label unchanged.
+    """
+    if (namespace, function) in _BOOKKEEPING_FUNCTIONS:
+        return None
+
+    if namespace == "fvc" and function in ("grad", "snGrad"):
+        meaning = _resolve_grad(function, arguments)
+        if meaning is not None:
+            return meaning
+
+    if namespace == "fvc" and function == "div":
+        return _resolve_fvc_div(arguments)
+
+    if not namespace:
+        meaning = _RECEIVER_TABLE.get((receiver, function))
+        if meaning is not None:
+            return meaning
+
+    return lookup(namespace, function)

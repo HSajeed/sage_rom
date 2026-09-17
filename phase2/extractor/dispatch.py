@@ -137,6 +137,7 @@ def _expand_incompressible_stokes_divDevReff(
             access=c.access,
             sign=c.sign * outer.sign,
             side=outer.side,
+            multiplied=c.multiplied,
             start_byte=c.start_byte,
             end_byte=c.end_byte,
             args_start_byte=c.args_start_byte,

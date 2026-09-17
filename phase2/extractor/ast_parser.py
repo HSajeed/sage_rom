@@ -45,6 +45,17 @@ class ExtractedCall:
                                  # sum, syntactic only (see extract_calls doc)
     side: str | None = None     # "lhs"/"rhs" of the nearest enclosing `==`
                                  # (fvMatrix equation split), else None
+    multiplied: bool = False    # True if a binary '*' or '/' was crossed on
+                                 # the arithmetic-composition path from this
+                                 # call up to its enclosing sum/assignment --
+                                 # i.e. this call is (part of) a multiplied
+                                 # coefficient/factor, not a bare additive
+                                 # term of that sum. Used by
+                                 # operator_graph.equation_terms to decide
+                                 # whether an unresolved unqualified call
+                                 # found inside a solve(...) expression is a
+                                 # genuine additive equation term or just a
+                                 # factor of one.
     start_byte: int = 0          # byte offset of the full call_expression in
                                   # source_file -- used (with end_byte) for
                                   # position-based nesting checks, since two
@@ -130,7 +141,7 @@ _ARITHMETIC_COMPOSITIONAL = {
 }
 
 
-def _find_sign_and_side(call_node: Node, src: bytes) -> tuple[int, str | None]:
+def _find_sign_and_side(call_node: Node, src: bytes) -> tuple[int, str | None, bool]:
     """
     Syntactic sign/side of a call within its enclosing fvMatrix expression.
 
@@ -154,9 +165,17 @@ def _find_sign_and_side(call_node: Node, src: bytes) -> tuple[int, str | None]:
     at the first non-arithmetic ancestor (e.g. an argument_list boundary),
     so a call passed as an argument to another call (fvOptions(U) inside a
     sum) is scored within ITS enclosing sum, not the outer one.
+
+    Compound assignment: if the arithmetic chain terminates directly at a
+    `-=`/`+=` assignment_expression (e.g. `HbyA -= (rAU - rAtU())*fvc::grad(p)`),
+    `-=` flips the accumulated sign once (the same "a -= b" == "a = a - b"
+    reasoning as the binary '-' case above); `+=` leaves it unchanged. This
+    does not walk further upward past the assignment -- a compound
+    assignment is a statement boundary, not part of a larger sum.
     """
     sign = 1
     side: str | None = None
+    multiplied = False
     node = call_node
     parent = node.parent
     while parent is not None and parent.type in _ARITHMETIC_COMPOSITIONAL:
@@ -174,10 +193,18 @@ def _find_sign_and_side(call_node: Node, src: bytes) -> tuple[int, str | None]:
                     side = "rhs" if is_right_child else "lhs"
             elif op_text == "-" and is_right_child:
                 sign *= -1
+            elif op_text in ("*", "/"):
+                multiplied = True
             # '+' and left-hand '-' leave sign unchanged
         node = parent
         parent = parent.parent
-    return sign, side
+    if parent is not None and parent.type == "assignment_expression":
+        op = parent.child_by_field_name("operator")
+        op_text = _node_text(op, src) if op is not None else ""
+        right = parent.child_by_field_name("right")
+        if right is not None and right.id == node.id and op_text == "-=":
+            sign *= -1
+    return sign, side, multiplied
 
 
 def extract_calls(
@@ -241,7 +268,7 @@ def extract_calls(
 
             if namespace is not None and function is not None:
                 arguments = _split_top_level_args(args_node, src) if args_node else []
-                sign, side = _find_sign_and_side(node, src)
+                sign, side, multiplied = _find_sign_and_side(node, src)
                 results.append(ExtractedCall(
                     namespace=namespace,
                     function=function,
@@ -255,6 +282,7 @@ def extract_calls(
                     access=access,
                     sign=sign,
                     side=side,
+                    multiplied=multiplied,
                     start_byte=node.start_byte,
                     end_byte=node.end_byte,
                     args_start_byte=args_node.start_byte if args_node else None,
