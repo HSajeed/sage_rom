@@ -1,0 +1,2910 @@
+{
+  "description": "Rank x fit-window DMD sweep, restart-from-last-train-snapshot protocol. pod_floor_* is the projection floor of a POD basis fitted on THAT ROW's own fit window (not the full-window basis); ratio = primary_full_field / pod_floor_full_field.",
+  "rows": [
+    {
+      "window": "full",
+      "rank": 1,
+      "n_fit": 319,
+      "fit_time_s": 0.11434369900007368,
+      "n_unstable": 1,
+      "max_lambda": 1.0004668235778809,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.2937016785144806,
+      "primary_fluctuation": 1.0037715435028076,
+      "pod_floor_full_field": 0.2117307484149933,
+      "pod_floor_fluctuation": 0.7236230373382568,
+      "ratio": 1.3871470285403416,
+      "rolling_mean_full_field": 0.2931404784321785,
+      "rolling_max_full_field": 0.2934105396270752,
+      "rolling_mean_fluctuation": 1.0011298954486847,
+      "rolling_max_fluctuation": 1.0012216567993164,
+      "legacy_extrap_full_field": 0.2932286560535431,
+      "legacy_extrap_fluctuation": 1.0021549463272095,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.0004668235778809,
+            "growth_rate": 0.018668584525585175,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 1,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0004668235778809,
+            "growth_rate": 0.018668584525585175,
+            "frequency_hz": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 2,
+      "n_fit": 319,
+      "fit_time_s": 0.12733849999995073,
+      "n_unstable": 1,
+      "max_lambda": 1.0004664659500122,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.2980709969997406,
+      "primary_fluctuation": 1.0187042951583862,
+      "pod_floor_full_field": 0.08647051453590393,
+      "pod_floor_fluctuation": 0.29552653431892395,
+      "ratio": 3.4470824951085124,
+      "rolling_mean_full_field": 0.2987307906150818,
+      "rolling_max_full_field": 0.3120137155056,
+      "rolling_mean_fluctuation": 1.020209938287735,
+      "rolling_max_fluctuation": 1.0647022724151611,
+      "legacy_extrap_full_field": 0.29323503375053406,
+      "legacy_extrap_fluctuation": 1.0021766424179077,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.0004664659500122,
+            "growth_rate": 0.018654286861419678,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.8917752504348755,
+            "growth_rate": -4.581645488739014,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 1,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0004664659500122,
+            "growth_rate": 0.018654286861419678,
+            "frequency_hz": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 4,
+      "n_fit": 319,
+      "fit_time_s": 0.10263780000013867,
+      "n_unstable": 3,
+      "max_lambda": 1.0018861293792725,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.08609411865472794,
+      "primary_fluctuation": 0.29424014687538147,
+      "pod_floor_full_field": 0.06595532596111298,
+      "pod_floor_fluctuation": 0.22541268169879913,
+      "ratio": 1.3053399009124558,
+      "rolling_mean_full_field": 0.06832561828196049,
+      "rolling_max_full_field": 0.06837176531553268,
+      "rolling_mean_fluctuation": 0.2333448939025402,
+      "rolling_max_fluctuation": 0.23338891565799713,
+      "legacy_extrap_full_field": 0.3127283751964569,
+      "legacy_extrap_fluctuation": 1.068798303604126,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.0018861293792725,
+            "growth_rate": 0.07537411153316498,
+            "frequency_hz": 2.989527126755253
+          },
+          {
+            "magnitude": 1.0018861293792725,
+            "growth_rate": 0.07537411153316498,
+            "frequency_hz": -2.989527126755253
+          },
+          {
+            "magnitude": 1.000055193901062,
+            "growth_rate": 0.0022076950408518314,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.997381865978241,
+            "growth_rate": -0.10486268997192383,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 3,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0018861293792725,
+            "growth_rate": 0.07537411153316498,
+            "frequency_hz": 2.989527126755253
+          },
+          {
+            "magnitude": 1.0018861293792725,
+            "growth_rate": 0.07537411153316498,
+            "frequency_hz": -2.989527126755253
+          },
+          {
+            "magnitude": 1.000055193901062,
+            "growth_rate": 0.0022076950408518314,
+            "frequency_hz": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 8,
+      "n_fit": 319,
+      "fit_time_s": 0.12442389899979389,
+      "n_unstable": 3,
+      "max_lambda": 1.0018852949142456,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.07979170978069305,
+      "primary_fluctuation": 0.2727006673812866,
+      "pod_floor_full_field": 0.024792561307549477,
+      "pod_floor_fluctuation": 0.08473246544599533,
+      "ratio": 3.218372994660944,
+      "rolling_mean_full_field": 0.04610317572951317,
+      "rolling_max_full_field": 0.046668946743011475,
+      "rolling_mean_fluctuation": 0.15745209529995918,
+      "rolling_max_fluctuation": 0.15962311625480652,
+      "legacy_extrap_full_field": 0.2994057834148407,
+      "legacy_extrap_fluctuation": 1.0232661962509155,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9873008131980896,
+            "growth_rate": -0.511220395565033,
+            "frequency_hz": 5.789195105696707
+          },
+          {
+            "magnitude": 0.9873008131980896,
+            "growth_rate": -0.511220395565033,
+            "frequency_hz": -5.789195105696707
+          },
+          {
+            "magnitude": 1.0018852949142456,
+            "growth_rate": 0.07534079253673553,
+            "frequency_hz": 2.9894662242351533
+          },
+          {
+            "magnitude": 1.0018852949142456,
+            "growth_rate": 0.07534079253673553,
+            "frequency_hz": -2.9894662242351533
+          },
+          {
+            "magnitude": 0.919283390045166,
+            "growth_rate": -3.3664333820343018,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.0000184774398804,
+            "growth_rate": 0.000739090726710856,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9952392578125,
+            "growth_rate": -0.19088442623615265,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.5346840023994446,
+            "growth_rate": -25.043174743652344,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 3,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0018852949142456,
+            "growth_rate": 0.07534079253673553,
+            "frequency_hz": 2.9894662242351533
+          },
+          {
+            "magnitude": 1.0018852949142456,
+            "growth_rate": 0.07534079253673553,
+            "frequency_hz": -2.9894662242351533
+          },
+          {
+            "magnitude": 1.0000184774398804,
+            "growth_rate": 0.000739090726710856,
+            "frequency_hz": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 11,
+      "n_fit": 319,
+      "fit_time_s": 0.10705779899990375,
+      "n_unstable": 3,
+      "max_lambda": 1.0019102096557617,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.06355144828557968,
+      "primary_fluctuation": 0.21719704568386078,
+      "pod_floor_full_field": 0.016218366101384163,
+      "pod_floor_fluctuation": 0.05542880669236183,
+      "ratio": 3.9184864793597094,
+      "rolling_mean_full_field": 0.04023140948265791,
+      "rolling_max_full_field": 0.04161422327160835,
+      "rolling_mean_fluctuation": 0.13739511743187904,
+      "rolling_max_fluctuation": 0.14200261235237122,
+      "legacy_extrap_full_field": 0.286702424287796,
+      "legacy_extrap_fluctuation": 0.9798505306243896,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.8295013904571533,
+            "growth_rate": -7.477219581604004,
+            "frequency_hz": 7.238862155351847
+          },
+          {
+            "magnitude": 0.8295013904571533,
+            "growth_rate": -7.477219581604004,
+            "frequency_hz": -7.238862155351847
+          },
+          {
+            "magnitude": 0.9912606477737427,
+            "growth_rate": -0.351110577583313,
+            "frequency_hz": 5.922612226394198
+          },
+          {
+            "magnitude": 0.9912606477737427,
+            "growth_rate": -0.351110577583313,
+            "frequency_hz": -5.922612226394198
+          },
+          {
+            "magnitude": 1.0019102096557617,
+            "growth_rate": 0.07633549720048904,
+            "frequency_hz": 2.989227926524111
+          },
+          {
+            "magnitude": 1.0019102096557617,
+            "growth_rate": 0.07633549720048904,
+            "frequency_hz": -2.989227926524111
+          },
+          {
+            "magnitude": 0.9572880864143372,
+            "growth_rate": -1.7460360527038574,
+            "frequency_hz": 0.841705840353043
+          },
+          {
+            "magnitude": 0.9572880864143372,
+            "growth_rate": -1.7460360527038574,
+            "frequency_hz": -0.841705840353043
+          },
+          {
+            "magnitude": 1.0001500844955444,
+            "growth_rate": 0.00600292906165123,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.997414767742157,
+            "growth_rate": -0.10354318469762802,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9051150679588318,
+            "growth_rate": -3.987727642059326,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 3,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0019102096557617,
+            "growth_rate": 0.07633549720048904,
+            "frequency_hz": 2.989227926524111
+          },
+          {
+            "magnitude": 1.0019102096557617,
+            "growth_rate": 0.07633549720048904,
+            "frequency_hz": -2.989227926524111
+          },
+          {
+            "magnitude": 1.0001500844955444,
+            "growth_rate": 0.00600292906165123,
+            "frequency_hz": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 12,
+      "n_fit": 319,
+      "fit_time_s": 0.0975142990000677,
+      "n_unstable": 3,
+      "max_lambda": 1.0019127130508423,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.05789679288864136,
+      "primary_fluctuation": 0.1978713721036911,
+      "pod_floor_full_field": 0.014443283900618553,
+      "pod_floor_fluctuation": 0.0493621863424778,
+      "ratio": 4.008561576925165,
+      "rolling_mean_full_field": 0.023725757375359535,
+      "rolling_max_full_field": 0.02430936135351658,
+      "rolling_mean_fluctuation": 0.08102725632488728,
+      "rolling_max_fluctuation": 0.08295223116874695,
+      "legacy_extrap_full_field": 0.2932034134864807,
+      "legacy_extrap_fluctuation": 1.0020686388015747,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9825233817100525,
+            "growth_rate": -0.7052454948425293,
+            "frequency_hz": 8.844406643880157
+          },
+          {
+            "magnitude": 0.9825233817100525,
+            "growth_rate": -0.7052454948425293,
+            "frequency_hz": -8.844406643880157
+          },
+          {
+            "magnitude": 0.9970501065254211,
+            "growth_rate": -0.1181701198220253,
+            "frequency_hz": 5.939346948770636
+          },
+          {
+            "magnitude": 0.9970501065254211,
+            "growth_rate": -0.1181701198220253,
+            "frequency_hz": -5.939346948770636
+          },
+          {
+            "magnitude": 1.0019127130508423,
+            "growth_rate": 0.07643544673919678,
+            "frequency_hz": 2.9891431183419166
+          },
+          {
+            "magnitude": 1.0019127130508423,
+            "growth_rate": 0.07643544673919678,
+            "frequency_hz": -2.9891431183419166
+          },
+          {
+            "magnitude": 0.9706885814666748,
+            "growth_rate": -1.1899832487106323,
+            "frequency_hz": 0.885335381223792
+          },
+          {
+            "magnitude": 0.9706885814666748,
+            "growth_rate": -1.1899832487106323,
+            "frequency_hz": -0.885335381223792
+          },
+          {
+            "magnitude": 1.0001499652862549,
+            "growth_rate": 0.005998161621391773,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9960496425628662,
+            "growth_rate": -0.15832722187042236,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9067432284355164,
+            "growth_rate": -3.9158384799957275,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.8944402933120728,
+            "growth_rate": -4.462285041809082,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 3,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0019127130508423,
+            "growth_rate": 0.07643544673919678,
+            "frequency_hz": 2.9891431183419166
+          },
+          {
+            "magnitude": 1.0019127130508423,
+            "growth_rate": 0.07643544673919678,
+            "frequency_hz": -2.9891431183419166
+          },
+          {
+            "magnitude": 1.0001499652862549,
+            "growth_rate": 0.005998161621391773,
+            "frequency_hz": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 15,
+      "n_fit": 319,
+      "fit_time_s": 0.09173949900014122,
+      "n_unstable": 7,
+      "max_lambda": 1.0017794370651245,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.03648151829838753,
+      "primary_fluctuation": 0.12468130886554718,
+      "pod_floor_full_field": 0.011295540258288383,
+      "pod_floor_fluctuation": 0.03860427811741829,
+      "ratio": 3.2297276149866585,
+      "rolling_mean_full_field": 0.016858187969774008,
+      "rolling_max_full_field": 0.017045052722096443,
+      "rolling_mean_fluctuation": 0.057574049569666386,
+      "rolling_max_fluctuation": 0.05819292739033699,
+      "legacy_extrap_full_field": 0.3037046790122986,
+      "legacy_extrap_fluctuation": 1.0379582643508911,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.0016192197799683,
+            "growth_rate": 0.0647164061665535,
+            "frequency_hz": 9.005267464662758
+          },
+          {
+            "magnitude": 1.0016192197799683,
+            "growth_rate": 0.0647164061665535,
+            "frequency_hz": -9.005267464662758
+          },
+          {
+            "magnitude": 1.0000778436660767,
+            "growth_rate": 0.0031136255711317062,
+            "frequency_hz": 5.99773482089049
+          },
+          {
+            "magnitude": 1.0000778436660767,
+            "growth_rate": 0.0031136255711317062,
+            "frequency_hz": -5.99773482089049
+          },
+          {
+            "magnitude": 1.0017794370651245,
+            "growth_rate": 0.07111422717571259,
+            "frequency_hz": 3.0045673930350976
+          },
+          {
+            "magnitude": 1.0017794370651245,
+            "growth_rate": 0.07111422717571259,
+            "frequency_hz": -3.0045673930350976
+          },
+          {
+            "magnitude": 1.0000149011611938,
+            "growth_rate": 0.0005960420239716768,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9750385880470276,
+            "growth_rate": -1.0111292600631714,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.942406952381134,
+            "growth_rate": -2.3727235794067383,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9253582954406738,
+            "growth_rate": -3.102970600128174,
+            "frequency_hz": 0.6928024989411491
+          },
+          {
+            "magnitude": 0.9253582954406738,
+            "growth_rate": -3.102970600128174,
+            "frequency_hz": -0.6928024989411491
+          },
+          {
+            "magnitude": 0.8794878125190735,
+            "growth_rate": -5.136622905731201,
+            "frequency_hz": 1.8519513416630742
+          },
+          {
+            "magnitude": 0.8794878125190735,
+            "growth_rate": -5.136622905731201,
+            "frequency_hz": -1.8519513416630742
+          },
+          {
+            "magnitude": 0.9952548742294312,
+            "growth_rate": -0.1902567744255066,
+            "frequency_hz": 2.7674666726444754
+          },
+          {
+            "magnitude": 0.9952548742294312,
+            "growth_rate": -0.1902567744255066,
+            "frequency_hz": -2.7674666726444754
+          }
+        ],
+        "n_unstable": 7,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0017794370651245,
+            "growth_rate": 0.07111422717571259,
+            "frequency_hz": 3.0045673930350976
+          },
+          {
+            "magnitude": 1.0017794370651245,
+            "growth_rate": 0.07111422717571259,
+            "frequency_hz": -3.0045673930350976
+          },
+          {
+            "magnitude": 1.0016192197799683,
+            "growth_rate": 0.0647164061665535,
+            "frequency_hz": 9.005267464662758
+          },
+          {
+            "magnitude": 1.0016192197799683,
+            "growth_rate": 0.0647164061665535,
+            "frequency_hz": -9.005267464662758
+          },
+          {
+            "magnitude": 1.0000778436660767,
+            "growth_rate": 0.0031136255711317062,
+            "frequency_hz": 5.99773482089049
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 23,
+      "n_fit": 319,
+      "fit_time_s": 0.09858110000004672,
+      "n_unstable": 6,
+      "max_lambda": 1.0020087957382202,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.01762651465833187,
+      "primary_fluctuation": 0.060241375118494034,
+      "pod_floor_full_field": 0.00406181626021862,
+      "pod_floor_fluctuation": 0.013881892897188663,
+      "ratio": 4.339564748648466,
+      "rolling_mean_full_field": 0.008486154023557901,
+      "rolling_max_full_field": 0.008704530075192451,
+      "rolling_mean_fluctuation": 0.028981621842831373,
+      "rolling_max_fluctuation": 0.029702967032790184,
+      "legacy_extrap_full_field": 0.2813040614128113,
+      "legacy_extrap_fluctuation": 0.9614006876945496,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.6949573159217834,
+            "growth_rate": -14.556194305419922,
+            "frequency_hz": 20.000000556550702
+          },
+          {
+            "magnitude": 1.000720500946045,
+            "growth_rate": 0.02880966104567051,
+            "frequency_hz": 12.017194955710975
+          },
+          {
+            "magnitude": 1.000720500946045,
+            "growth_rate": 0.02880966104567051,
+            "frequency_hz": -12.017194955710975
+          },
+          {
+            "magnitude": 1.0020087957382202,
+            "growth_rate": 0.08027122914791107,
+            "frequency_hz": 9.006402034974888
+          },
+          {
+            "magnitude": 1.0020087957382202,
+            "growth_rate": 0.08027122914791107,
+            "frequency_hz": -9.006402034974888
+          },
+          {
+            "magnitude": 1.0012127161026,
+            "growth_rate": 0.04847925528883934,
+            "frequency_hz": 5.994885493641733
+          },
+          {
+            "magnitude": 1.0012127161026,
+            "growth_rate": 0.04847925528883934,
+            "frequency_hz": -5.994885493641733
+          },
+          {
+            "magnitude": 0.9796463847160339,
+            "growth_rate": -0.8225441575050354,
+            "frequency_hz": 5.589443187780053
+          },
+          {
+            "magnitude": 0.9796463847160339,
+            "growth_rate": -0.8225441575050354,
+            "frequency_hz": -5.589443187780053
+          },
+          {
+            "magnitude": 0.944937527179718,
+            "growth_rate": -2.265458583831787,
+            "frequency_hz": 0.7937710984392011
+          },
+          {
+            "magnitude": 0.944937527179718,
+            "growth_rate": -2.265458583831787,
+            "frequency_hz": -0.7937710984392011
+          },
+          {
+            "magnitude": 0.8798346519470215,
+            "growth_rate": -5.120851516723633,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9999809265136719,
+            "growth_rate": -0.0007629467290826142,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9777234792709351,
+            "growth_rate": -0.9011355638504028,
+            "frequency_hz": 0.19650864527795578
+          },
+          {
+            "magnitude": 0.9777234792709351,
+            "growth_rate": -0.9011355638504028,
+            "frequency_hz": -0.19650864527795578
+          },
+          {
+            "magnitude": 0.8947206139564514,
+            "growth_rate": -4.449750900268555,
+            "frequency_hz": 2.5718113504100133
+          },
+          {
+            "magnitude": 0.8947206139564514,
+            "growth_rate": -4.449750900268555,
+            "frequency_hz": -2.5718113504100133
+          },
+          {
+            "magnitude": 0.9941155910491943,
+            "growth_rate": -0.2360716015100479,
+            "frequency_hz": 2.5621462532794914
+          },
+          {
+            "magnitude": 0.9941155910491943,
+            "growth_rate": -0.2360716015100479,
+            "frequency_hz": -2.5621462532794914
+          },
+          {
+            "magnitude": 0.9980320930480957,
+            "growth_rate": -0.07879383116960526,
+            "frequency_hz": 3.01682264968087
+          },
+          {
+            "magnitude": 0.9980320930480957,
+            "growth_rate": -0.07879383116960526,
+            "frequency_hz": -3.01682264968087
+          },
+          {
+            "magnitude": 0.9949609041213989,
+            "growth_rate": -0.20207339525222778,
+            "frequency_hz": 2.965673260261414
+          },
+          {
+            "magnitude": 0.9949609041213989,
+            "growth_rate": -0.20207339525222778,
+            "frequency_hz": -2.965673260261414
+          }
+        ],
+        "n_unstable": 6,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0020087957382202,
+            "growth_rate": 0.08027122914791107,
+            "frequency_hz": 9.006402034974888
+          },
+          {
+            "magnitude": 1.0020087957382202,
+            "growth_rate": 0.08027122914791107,
+            "frequency_hz": -9.006402034974888
+          },
+          {
+            "magnitude": 1.0012127161026,
+            "growth_rate": 0.04847925528883934,
+            "frequency_hz": 5.994885493641733
+          },
+          {
+            "magnitude": 1.0012127161026,
+            "growth_rate": 0.04847925528883934,
+            "frequency_hz": -5.994885493641733
+          },
+          {
+            "magnitude": 1.000720500946045,
+            "growth_rate": 0.02880966104567051,
+            "frequency_hz": 12.017194955710975
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 24,
+      "n_fit": 319,
+      "fit_time_s": 0.09711669900025299,
+      "n_unstable": 6,
+      "max_lambda": 1.002156376838684,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.01686079055070877,
+      "primary_fluctuation": 0.057624392211437225,
+      "pod_floor_full_field": 0.003996162675321102,
+      "pod_floor_fluctuation": 0.013657513074576855,
+      "ratio": 4.219245291197752,
+      "rolling_mean_full_field": 0.005583810270763934,
+      "rolling_max_full_field": 0.005747536662966013,
+      "rolling_mean_fluctuation": 0.019069587346166372,
+      "rolling_max_fluctuation": 0.019612649455666542,
+      "legacy_extrap_full_field": 0.28147605061531067,
+      "legacy_extrap_fluctuation": 0.9619885087013245,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9938858151435852,
+            "growth_rate": -0.24531811475753784,
+            "frequency_hz": 14.94228342165165
+          },
+          {
+            "magnitude": 0.9938858151435852,
+            "growth_rate": -0.24531811475753784,
+            "frequency_hz": -14.94228342165165
+          },
+          {
+            "magnitude": 1.0006552934646606,
+            "growth_rate": 0.026203153654932976,
+            "frequency_hz": 12.015913156876737
+          },
+          {
+            "magnitude": 1.0006552934646606,
+            "growth_rate": 0.026203153654932976,
+            "frequency_hz": -12.015913156876737
+          },
+          {
+            "magnitude": 1.002156376838684,
+            "growth_rate": 0.08616220951080322,
+            "frequency_hz": 9.00430668471951
+          },
+          {
+            "magnitude": 1.002156376838684,
+            "growth_rate": 0.08616220951080322,
+            "frequency_hz": -9.00430668471951
+          },
+          {
+            "magnitude": 1.0012270212173462,
+            "growth_rate": 0.04905076324939728,
+            "frequency_hz": 5.994860449614777
+          },
+          {
+            "magnitude": 1.0012270212173462,
+            "growth_rate": 0.04905076324939728,
+            "frequency_hz": -5.994860449614777
+          },
+          {
+            "magnitude": 0.9797961711883545,
+            "growth_rate": -0.8164287209510803,
+            "frequency_hz": 5.588671755858796
+          },
+          {
+            "magnitude": 0.9797961711883545,
+            "growth_rate": -0.8164287209510803,
+            "frequency_hz": -5.588671755858796
+          },
+          {
+            "magnitude": 0.9449446201324463,
+            "growth_rate": -2.265158176422119,
+            "frequency_hz": 0.7936432695516096
+          },
+          {
+            "magnitude": 0.9449446201324463,
+            "growth_rate": -2.265158176422119,
+            "frequency_hz": -0.7936432695516096
+          },
+          {
+            "magnitude": 0.8798821568489075,
+            "growth_rate": -5.118691921234131,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9999827742576599,
+            "growth_rate": -0.0006890356307849288,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9777143001556396,
+            "growth_rate": -0.9015111327171326,
+            "frequency_hz": 0.19651412365885257
+          },
+          {
+            "magnitude": 0.9777143001556396,
+            "growth_rate": -0.9015111327171326,
+            "frequency_hz": -0.19651412365885257
+          },
+          {
+            "magnitude": 0.8947272300720215,
+            "growth_rate": -4.449455261230469,
+            "frequency_hz": 2.57180224349112
+          },
+          {
+            "magnitude": 0.8947272300720215,
+            "growth_rate": -4.449455261230469,
+            "frequency_hz": -2.57180224349112
+          },
+          {
+            "magnitude": 0.9945265650749207,
+            "growth_rate": -0.21953876316547394,
+            "frequency_hz": 2.5613101242885956
+          },
+          {
+            "magnitude": 0.9945265650749207,
+            "growth_rate": -0.21953876316547394,
+            "frequency_hz": -2.5613101242885956
+          },
+          {
+            "magnitude": 0.9982004761695862,
+            "growth_rate": -0.07204579561948776,
+            "frequency_hz": 3.0185262126963575
+          },
+          {
+            "magnitude": 0.9982004761695862,
+            "growth_rate": -0.07204579561948776,
+            "frequency_hz": -3.0185262126963575
+          },
+          {
+            "magnitude": 0.9952368140220642,
+            "growth_rate": -0.1909826546907425,
+            "frequency_hz": 2.963682449845832
+          },
+          {
+            "magnitude": 0.9952368140220642,
+            "growth_rate": -0.1909826546907425,
+            "frequency_hz": -2.963682449845832
+          }
+        ],
+        "n_unstable": 6,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.002156376838684,
+            "growth_rate": 0.08616220951080322,
+            "frequency_hz": 9.00430668471951
+          },
+          {
+            "magnitude": 1.002156376838684,
+            "growth_rate": 0.08616220951080322,
+            "frequency_hz": -9.00430668471951
+          },
+          {
+            "magnitude": 1.0012270212173462,
+            "growth_rate": 0.04905076324939728,
+            "frequency_hz": 5.994860449614777
+          },
+          {
+            "magnitude": 1.0012270212173462,
+            "growth_rate": 0.04905076324939728,
+            "frequency_hz": -5.994860449614777
+          },
+          {
+            "magnitude": 1.0006552934646606,
+            "growth_rate": 0.026203153654932976,
+            "frequency_hz": 12.015913156876737
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 32,
+      "n_fit": 319,
+      "fit_time_s": 0.09109019999959855,
+      "n_unstable": 12,
+      "max_lambda": 1.0024875402450562,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.030452605336904526,
+      "primary_fluctuation": 0.10407654941082001,
+      "pod_floor_full_field": 0.002248098375275731,
+      "pod_floor_fluctuation": 0.007683228235691786,
+      "ratio": 13.545939836004504,
+      "rolling_mean_full_field": 0.005132692749612033,
+      "rolling_max_full_field": 0.005167296156287193,
+      "rolling_mean_fluctuation": 0.017529170960187912,
+      "rolling_max_fluctuation": 0.017673850059509277,
+      "legacy_extrap_full_field": 0.24304956197738647,
+      "legacy_extrap_fluctuation": 0.8306599855422974,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9319885969161987,
+            "growth_rate": -2.817387819290161,
+            "frequency_hz": 20.000000556550702
+          },
+          {
+            "magnitude": 1.000191569328308,
+            "growth_rate": 0.007662039250135422,
+            "frequency_hz": 15.015267787482776
+          },
+          {
+            "magnitude": 1.000191569328308,
+            "growth_rate": 0.007662039250135422,
+            "frequency_hz": -15.015267787482776
+          },
+          {
+            "magnitude": 1.0014023780822754,
+            "growth_rate": 0.05605582520365715,
+            "frequency_hz": 12.015886595029965
+          },
+          {
+            "magnitude": 1.0014023780822754,
+            "growth_rate": 0.05605582520365715,
+            "frequency_hz": -12.015886595029965
+          },
+          {
+            "magnitude": 1.0024875402450562,
+            "growth_rate": 0.0993780568242073,
+            "frequency_hz": 9.011749314185101
+          },
+          {
+            "magnitude": 1.0024875402450562,
+            "growth_rate": 0.0993780568242073,
+            "frequency_hz": -9.011749314185101
+          },
+          {
+            "magnitude": 0.969383716583252,
+            "growth_rate": -1.2437900304794312,
+            "frequency_hz": 8.504049969529436
+          },
+          {
+            "magnitude": 0.969383716583252,
+            "growth_rate": -1.2437900304794312,
+            "frequency_hz": -8.504049969529436
+          },
+          {
+            "magnitude": 1.0014581680297852,
+            "growth_rate": 0.05828423798084259,
+            "frequency_hz": 6.009769614208053
+          },
+          {
+            "magnitude": 1.0014581680297852,
+            "growth_rate": 0.05828423798084259,
+            "frequency_hz": -6.009769614208053
+          },
+          {
+            "magnitude": 0.99575275182724,
+            "growth_rate": -0.170251727104187,
+            "frequency_hz": 5.749846765343218
+          },
+          {
+            "magnitude": 0.99575275182724,
+            "growth_rate": -0.170251727104187,
+            "frequency_hz": -5.749846765343218
+          },
+          {
+            "magnitude": 0.8603980541229248,
+            "growth_rate": -6.014405250549316,
+            "frequency_hz": 4.731517165968046
+          },
+          {
+            "magnitude": 0.8603980541229248,
+            "growth_rate": -6.014405250549316,
+            "frequency_hz": -4.731517165968046
+          },
+          {
+            "magnitude": 1.0010331869125366,
+            "growth_rate": 0.041306138038635254,
+            "frequency_hz": 3.0539094385091774
+          },
+          {
+            "magnitude": 1.0010331869125366,
+            "growth_rate": 0.041306138038635254,
+            "frequency_hz": -3.0539094385091774
+          },
+          {
+            "magnitude": 1.0010169744491577,
+            "growth_rate": 0.04065830633044243,
+            "frequency_hz": 2.9618390576798364
+          },
+          {
+            "magnitude": 1.0010169744491577,
+            "growth_rate": 0.04065830633044243,
+            "frequency_hz": -2.9618390576798364
+          },
+          {
+            "magnitude": 0.8369565606117249,
+            "growth_rate": -7.119324207305908,
+            "frequency_hz": 2.6334887175251365
+          },
+          {
+            "magnitude": 0.8369565606117249,
+            "growth_rate": -7.119324207305908,
+            "frequency_hz": -2.6334887175251365
+          },
+          {
+            "magnitude": 0.9958551526069641,
+            "growth_rate": -0.1661384403705597,
+            "frequency_hz": 2.539102523112207
+          },
+          {
+            "magnitude": 0.9958551526069641,
+            "growth_rate": -0.1661384403705597,
+            "frequency_hz": -2.539102523112207
+          },
+          {
+            "magnitude": 0.6846620440483093,
+            "growth_rate": -15.153197288513184,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.8887282013893127,
+            "growth_rate": -4.718553066253662,
+            "frequency_hz": 1.3824740201940167
+          },
+          {
+            "magnitude": 0.8887282013893127,
+            "growth_rate": -4.718553066253662,
+            "frequency_hz": -1.3824740201940167
+          },
+          {
+            "magnitude": 0.9999991655349731,
+            "growth_rate": -3.337861562613398e-05,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9546504020690918,
+            "growth_rate": -1.8564029932022095,
+            "frequency_hz": 0.4771524145257749
+          },
+          {
+            "magnitude": 0.9546504020690918,
+            "growth_rate": -1.8564029932022095,
+            "frequency_hz": -0.4771524145257749
+          },
+          {
+            "magnitude": 0.9630405902862549,
+            "growth_rate": -1.506388783454895,
+            "frequency_hz": 0.14289669992946202
+          },
+          {
+            "magnitude": 0.9630405902862549,
+            "growth_rate": -1.506388783454895,
+            "frequency_hz": -0.14289669992946202
+          },
+          {
+            "magnitude": 0.8676999807357788,
+            "growth_rate": -5.676370620727539,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 12,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0024875402450562,
+            "growth_rate": 0.0993780568242073,
+            "frequency_hz": 9.011749314185101
+          },
+          {
+            "magnitude": 1.0024875402450562,
+            "growth_rate": 0.0993780568242073,
+            "frequency_hz": -9.011749314185101
+          },
+          {
+            "magnitude": 1.0014581680297852,
+            "growth_rate": 0.05828423798084259,
+            "frequency_hz": 6.009769614208053
+          },
+          {
+            "magnitude": 1.0014581680297852,
+            "growth_rate": 0.05828423798084259,
+            "frequency_hz": -6.009769614208053
+          },
+          {
+            "magnitude": 1.0014023780822754,
+            "growth_rate": 0.05605582520365715,
+            "frequency_hz": 12.015886595029965
+          }
+        ]
+      }
+    },
+    {
+      "window": "full",
+      "rank": 63,
+      "n_fit": 319,
+      "fit_time_s": 0.12160790000007182,
+      "n_unstable": 39,
+      "max_lambda": 1.074702262878418,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.15024730563163757,
+      "primary_fluctuation": 0.5134937167167664,
+      "pod_floor_full_field": 0.0005579612334258854,
+      "pod_floor_fluctuation": 0.0019069199915975332,
+      "ratio": 269.2791122944477,
+      "rolling_mean_full_field": 0.008057800470851362,
+      "rolling_max_full_field": 0.012392530217766762,
+      "rolling_mean_fluctuation": 0.027526351157575846,
+      "rolling_max_fluctuation": 0.04238652065396309,
+      "legacy_extrap_full_field": 6029298688.0,
+      "legacy_extrap_fluctuation": 20606072832.0,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.065597414970398,
+            "growth_rate": 2.541423797607422,
+            "frequency_hz": 18.99618890371135
+          },
+          {
+            "magnitude": 1.065597414970398,
+            "growth_rate": 2.541423797607422,
+            "frequency_hz": -18.99618890371135
+          },
+          {
+            "magnitude": 1.0050914287567139,
+            "growth_rate": 0.20314045250415802,
+            "frequency_hz": 18.020220137568593
+          },
+          {
+            "magnitude": 1.0050914287567139,
+            "growth_rate": 0.20314045250415802,
+            "frequency_hz": -18.020220137568593
+          },
+          {
+            "magnitude": 0.9193178415298462,
+            "growth_rate": -3.364934206008911,
+            "frequency_hz": 20.000000556550702
+          },
+          {
+            "magnitude": 0.9870216846466064,
+            "growth_rate": -0.5225307941436768,
+            "frequency_hz": 16.15331087135067
+          },
+          {
+            "magnitude": 0.9870216846466064,
+            "growth_rate": -0.5225307941436768,
+            "frequency_hz": -16.15331087135067
+          },
+          {
+            "magnitude": 1.0013067722320557,
+            "growth_rate": 0.05223676562309265,
+            "frequency_hz": 15.045945961594843
+          },
+          {
+            "magnitude": 1.0013067722320557,
+            "growth_rate": 0.05223676562309265,
+            "frequency_hz": -15.045945961594843
+          },
+          {
+            "magnitude": 1.0038740634918213,
+            "growth_rate": 0.15466314554214478,
+            "frequency_hz": 14.877064221996923
+          },
+          {
+            "magnitude": 1.0038740634918213,
+            "growth_rate": 0.15466314554214478,
+            "frequency_hz": -14.877064221996923
+          },
+          {
+            "magnitude": 1.002943754196167,
+            "growth_rate": 0.1175771951675415,
+            "frequency_hz": 12.086827975389348
+          },
+          {
+            "magnitude": 1.002943754196167,
+            "growth_rate": 0.1175771951675415,
+            "frequency_hz": -12.086827975389348
+          },
+          {
+            "magnitude": 1.0146042108535767,
+            "growth_rate": 0.579943835735321,
+            "frequency_hz": 11.930399947378085
+          },
+          {
+            "magnitude": 1.0146042108535767,
+            "growth_rate": 0.579943835735321,
+            "frequency_hz": -11.930399947378085
+          },
+          {
+            "magnitude": 0.9678272008895874,
+            "growth_rate": -1.3080687522888184,
+            "frequency_hz": 11.221757955160461
+          },
+          {
+            "magnitude": 0.9678272008895874,
+            "growth_rate": -1.3080687522888184,
+            "frequency_hz": -11.221757955160461
+          },
+          {
+            "magnitude": 0.873723030090332,
+            "growth_rate": -5.399673938751221,
+            "frequency_hz": 10.169810164690485
+          },
+          {
+            "magnitude": 0.873723030090332,
+            "growth_rate": -5.399673938751221,
+            "frequency_hz": -10.169810164690485
+          },
+          {
+            "magnitude": 1.0401877164840698,
+            "growth_rate": 1.576047658920288,
+            "frequency_hz": 8.927456431818158
+          },
+          {
+            "magnitude": 1.0401877164840698,
+            "growth_rate": 1.576047658920288,
+            "frequency_hz": -8.927456431818158
+          },
+          {
+            "magnitude": 1.004336953163147,
+            "growth_rate": 0.17310301959514618,
+            "frequency_hz": 8.991991853645978
+          },
+          {
+            "magnitude": 1.004336953163147,
+            "growth_rate": 0.17310301959514618,
+            "frequency_hz": -8.991991853645978
+          },
+          {
+            "magnitude": 1.0136760473251343,
+            "growth_rate": 0.5433349609375,
+            "frequency_hz": 8.327667923312934
+          },
+          {
+            "magnitude": 1.0136760473251343,
+            "growth_rate": 0.5433349609375,
+            "frequency_hz": -8.327667923312934
+          },
+          {
+            "magnitude": 0.6600123643875122,
+            "growth_rate": -16.6198673248291,
+            "frequency_hz": 7.336642384599842
+          },
+          {
+            "magnitude": 0.6600123643875122,
+            "growth_rate": -16.6198673248291,
+            "frequency_hz": -7.336642384599842
+          },
+          {
+            "magnitude": 1.032310128211975,
+            "growth_rate": 1.2719653844833374,
+            "frequency_hz": 6.187828471865792
+          },
+          {
+            "magnitude": 1.032310128211975,
+            "growth_rate": 1.2719653844833374,
+            "frequency_hz": -6.187828471865792
+          },
+          {
+            "magnitude": 1.073407530784607,
+            "growth_rate": 2.8335278034210205,
+            "frequency_hz": 5.218986628666993
+          },
+          {
+            "magnitude": 1.073407530784607,
+            "growth_rate": 2.8335278034210205,
+            "frequency_hz": -5.218986628666993
+          },
+          {
+            "magnitude": 1.004287838935852,
+            "growth_rate": 0.17114689946174622,
+            "frequency_hz": 6.0082377545592
+          },
+          {
+            "magnitude": 1.004287838935852,
+            "growth_rate": 0.17114689946174622,
+            "frequency_hz": -6.0082377545592
+          },
+          {
+            "magnitude": 1.0099904537200928,
+            "growth_rate": 0.39763516187667847,
+            "frequency_hz": 5.773234091971249
+          },
+          {
+            "magnitude": 1.0099904537200928,
+            "growth_rate": 0.39763516187667847,
+            "frequency_hz": -5.773234091971249
+          },
+          {
+            "magnitude": 0.7981899380683899,
+            "growth_rate": -9.01634693145752,
+            "frequency_hz": 6.036813748226718
+          },
+          {
+            "magnitude": 0.7981899380683899,
+            "growth_rate": -9.01634693145752,
+            "frequency_hz": -6.036813748226718
+          },
+          {
+            "magnitude": 0.4623849093914032,
+            "growth_rate": -30.85430335998535,
+            "frequency_hz": 3.725819242552904
+          },
+          {
+            "magnitude": 0.4623849093914032,
+            "growth_rate": -30.85430335998535,
+            "frequency_hz": -3.725819242552904
+          },
+          {
+            "magnitude": 0.6629152297973633,
+            "growth_rate": -16.444326400756836,
+            "frequency_hz": 3.6286571454247953
+          },
+          {
+            "magnitude": 0.6629152297973633,
+            "growth_rate": -16.444326400756836,
+            "frequency_hz": -3.6286571454247953
+          },
+          {
+            "magnitude": 1.0107877254486084,
+            "growth_rate": 0.42919811606407166,
+            "frequency_hz": 3.6012703635827674
+          },
+          {
+            "magnitude": 1.0107877254486084,
+            "growth_rate": 0.42919811606407166,
+            "frequency_hz": -3.6012703635827674
+          },
+          {
+            "magnitude": 1.074702262878418,
+            "growth_rate": 2.881746292114258,
+            "frequency_hz": 1.6461520501462819
+          },
+          {
+            "magnitude": 1.074702262878418,
+            "growth_rate": 2.881746292114258,
+            "frequency_hz": -1.6461520501462819
+          },
+          {
+            "magnitude": 1.0035960674285889,
+            "growth_rate": 0.14358468353748322,
+            "frequency_hz": 3.0575210907602988
+          },
+          {
+            "magnitude": 1.0035960674285889,
+            "growth_rate": 0.14358468353748322,
+            "frequency_hz": -3.0575210907602988
+          },
+          {
+            "magnitude": 1.0034433603286743,
+            "growth_rate": 0.13749781250953674,
+            "frequency_hz": 2.9660050936185907
+          },
+          {
+            "magnitude": 1.0034433603286743,
+            "growth_rate": 0.13749781250953674,
+            "frequency_hz": -2.9660050936185907
+          },
+          {
+            "magnitude": 0.8769863247871399,
+            "growth_rate": -5.250555038452148,
+            "frequency_hz": 2.9202445337267977
+          },
+          {
+            "magnitude": 0.8769863247871399,
+            "growth_rate": -5.250555038452148,
+            "frequency_hz": -2.9202445337267977
+          },
+          {
+            "magnitude": 1.0058255195617676,
+            "growth_rate": 0.23234467208385468,
+            "frequency_hz": 2.593342383403617
+          },
+          {
+            "magnitude": 1.0058255195617676,
+            "growth_rate": 0.23234467208385468,
+            "frequency_hz": -2.593342383403617
+          },
+          {
+            "magnitude": 1.0653798580169678,
+            "growth_rate": 2.5332562923431396,
+            "frequency_hz": 1.0120695412733784
+          },
+          {
+            "magnitude": 1.0653798580169678,
+            "growth_rate": 2.5332562923431396,
+            "frequency_hz": -1.0120695412733784
+          },
+          {
+            "magnitude": 0.8525197505950928,
+            "growth_rate": -6.3823561668396,
+            "frequency_hz": 1.5756677232788583
+          },
+          {
+            "magnitude": 0.8525197505950928,
+            "growth_rate": -6.3823561668396,
+            "frequency_hz": -1.5756677232788583
+          },
+          {
+            "magnitude": 0.793737530708313,
+            "growth_rate": -9.240097045898438,
+            "frequency_hz": 0.3417257478243546
+          },
+          {
+            "magnitude": 0.793737530708313,
+            "growth_rate": -9.240097045898438,
+            "frequency_hz": -0.3417257478243546
+          },
+          {
+            "magnitude": 0.9793108701705933,
+            "growth_rate": -0.8362459540367126,
+            "frequency_hz": 0.23196531934028825
+          },
+          {
+            "magnitude": 0.9793108701705933,
+            "growth_rate": -0.8362459540367126,
+            "frequency_hz": -0.23196531934028825
+          },
+          {
+            "magnitude": 0.9977426528930664,
+            "growth_rate": -0.09039594978094101,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.0000287294387817,
+            "growth_rate": 0.0011491610202938318,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 39,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.074702262878418,
+            "growth_rate": 2.881746292114258,
+            "frequency_hz": 1.6461520501462819
+          },
+          {
+            "magnitude": 1.074702262878418,
+            "growth_rate": 2.881746292114258,
+            "frequency_hz": -1.6461520501462819
+          },
+          {
+            "magnitude": 1.073407530784607,
+            "growth_rate": 2.8335278034210205,
+            "frequency_hz": 5.218986628666993
+          },
+          {
+            "magnitude": 1.073407530784607,
+            "growth_rate": 2.8335278034210205,
+            "frequency_hz": -5.218986628666993
+          },
+          {
+            "magnitude": 1.065597414970398,
+            "growth_rate": 2.541423797607422,
+            "frequency_hz": 18.99618890371135
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 1,
+      "n_fit": 160,
+      "fit_time_s": 0.020605300000170246,
+      "n_unstable": 0,
+      "max_lambda": 0.999998152256012,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.28724217414855957,
+      "primary_fluctuation": 0.9816951751708984,
+      "pod_floor_full_field": 0.20384180545806885,
+      "pod_floor_fluctuation": 0.6966612935066223,
+      "ratio": 1.4091426118556751,
+      "rolling_mean_full_field": 0.28728797286748886,
+      "rolling_max_full_field": 0.2874166667461395,
+      "rolling_mean_fluctuation": 0.9811434894800186,
+      "rolling_max_fluctuation": 0.9829427599906921,
+      "legacy_extrap_full_field": 0.28724154829978943,
+      "legacy_extrap_fluctuation": 0.9816930294036865,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.999998152256012,
+            "growth_rate": -7.39098250051029e-05,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 0,
+        "dominant_unstable": []
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 2,
+      "n_fit": 160,
+      "fit_time_s": 0.02230120000012903,
+      "n_unstable": 0,
+      "max_lambda": 0.9999933242797852,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.291172057390213,
+      "primary_fluctuation": 0.9951261281967163,
+      "pod_floor_full_field": 0.06493224948644638,
+      "pod_floor_fluctuation": 0.22191613912582397,
+      "ratio": 4.48424411125616,
+      "rolling_mean_full_field": 0.29114941507577896,
+      "rolling_max_full_field": 0.30488142371177673,
+      "rolling_mean_fluctuation": 0.9943170100450516,
+      "rolling_max_fluctuation": 1.040364384651184,
+      "legacy_extrap_full_field": 0.28732728958129883,
+      "legacy_extrap_fluctuation": 0.9819860458374023,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9999933242797852,
+            "growth_rate": -0.0002670296817086637,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.8910171985626221,
+            "growth_rate": -4.615662097930908,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 0,
+        "dominant_unstable": []
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 4,
+      "n_fit": 160,
+      "fit_time_s": 0.023346699999819975,
+      "n_unstable": 0,
+      "max_lambda": 0.9999967813491821,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.06502200663089752,
+      "primary_fluctuation": 0.22222289443016052,
+      "pod_floor_full_field": 0.03560328856110573,
+      "pod_floor_fluctuation": 0.12167982012033463,
+      "ratio": 1.8262921561108214,
+      "rolling_mean_full_field": 0.06473850645124912,
+      "rolling_max_full_field": 0.06493613868951797,
+      "rolling_mean_fluctuation": 0.22109467163681984,
+      "rolling_max_fluctuation": 0.22210291028022766,
+      "legacy_extrap_full_field": 0.06527797132730484,
+      "legacy_extrap_fluctuation": 0.22309768199920654,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9999967813491821,
+            "growth_rate": -0.00012874623644165695,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.999984085559845,
+            "growth_rate": -0.0006365826702676713,
+            "frequency_hz": 3.0022179976880476
+          },
+          {
+            "magnitude": 0.999984085559845,
+            "growth_rate": -0.0006365826702676713,
+            "frequency_hz": -3.0022179976880476
+          },
+          {
+            "magnitude": 0.581648051738739,
+            "growth_rate": -21.675588607788086,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 0,
+        "dominant_unstable": []
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 5,
+      "n_fit": 160,
+      "fit_time_s": 0.022352199999659206,
+      "n_unstable": 0,
+      "max_lambda": 0.999996542930603,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.036173462867736816,
+      "primary_fluctuation": 0.12362848222255707,
+      "pod_floor_full_field": 0.026405831798911095,
+      "pod_floor_fluctuation": 0.09024606645107269,
+      "ratio": 1.3699043129263784,
+      "rolling_mean_full_field": 0.03602834418416023,
+      "rolling_max_full_field": 0.036107856780290604,
+      "rolling_mean_fluctuation": 0.12304342724382877,
+      "rolling_max_fluctuation": 0.12321291863918304,
+      "legacy_extrap_full_field": 0.03911672160029411,
+      "legacy_extrap_fluctuation": 0.13368752598762512,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.999996542930603,
+            "growth_rate": -0.0001382830087095499,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.999992311000824,
+            "growth_rate": -0.00030756116029806435,
+            "frequency_hz": 3.002240575257804
+          },
+          {
+            "magnitude": 0.999992311000824,
+            "growth_rate": -0.00030756116029806435,
+            "frequency_hz": -3.002240575257804
+          },
+          {
+            "magnitude": 0.9995579123497009,
+            "growth_rate": -0.017687415704131126,
+            "frequency_hz": 6.010857511560769
+          },
+          {
+            "magnitude": 0.9995579123497009,
+            "growth_rate": -0.017687415704131126,
+            "frequency_hz": -6.010857511560769
+          }
+        ],
+        "n_unstable": 0,
+        "dominant_unstable": []
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 6,
+      "n_fit": 160,
+      "fit_time_s": 0.02192119899973477,
+      "n_unstable": 2,
+      "max_lambda": 1.000028133392334,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.036217983812093735,
+      "primary_fluctuation": 0.12378063797950745,
+      "pod_floor_full_field": 0.013369638472795486,
+      "pod_floor_fluctuation": 0.04569283500313759,
+      "ratio": 2.708972563902159,
+      "rolling_mean_full_field": 0.035932810977101326,
+      "rolling_max_full_field": 0.03619947284460068,
+      "rolling_mean_fluctuation": 0.12271710485219955,
+      "rolling_max_fluctuation": 0.12352553755044937,
+      "legacy_extrap_full_field": 0.0387086495757103,
+      "legacy_extrap_fluctuation": 0.13229288160800934,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9999967813491821,
+            "growth_rate": -0.00012874623644165695,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9996039867401123,
+            "growth_rate": -0.015843667089939117,
+            "frequency_hz": 6.010486025160911
+          },
+          {
+            "magnitude": 0.9996039867401123,
+            "growth_rate": -0.015843667089939117,
+            "frequency_hz": -6.010486025160911
+          },
+          {
+            "magnitude": 1.000028133392334,
+            "growth_rate": 0.0011253198608756065,
+            "frequency_hz": 3.0022747262036544
+          },
+          {
+            "magnitude": 1.000028133392334,
+            "growth_rate": 0.0011253198608756065,
+            "frequency_hz": -3.0022747262036544
+          },
+          {
+            "magnitude": 0.14906392991542816,
+            "growth_rate": -76.13520050048828,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 2,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.000028133392334,
+            "growth_rate": 0.0011253198608756065,
+            "frequency_hz": 3.0022747262036544
+          },
+          {
+            "magnitude": 1.000028133392334,
+            "growth_rate": 0.0011253198608756065,
+            "frequency_hz": -3.0022747262036544
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 8,
+      "n_fit": 160,
+      "fit_time_s": 0.023021500000140804,
+      "n_unstable": 2,
+      "max_lambda": 1.0000319480895996,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.014001619070768356,
+      "primary_fluctuation": 0.04785272851586342,
+      "pod_floor_full_field": 0.007078156806528568,
+      "pod_floor_fluctuation": 0.024190710857510567,
+      "ratio": 1.9781447986365466,
+      "rolling_mean_full_field": 0.013772456208243966,
+      "rolling_max_full_field": 0.01387766283005476,
+      "rolling_mean_fluctuation": 0.04703576024621725,
+      "rolling_max_fluctuation": 0.04746616259217262,
+      "legacy_extrap_full_field": 0.018838059157133102,
+      "legacy_extrap_fluctuation": 0.06438201665878296,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9999958276748657,
+            "growth_rate": -0.00016689335461705923,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.3087121844291687,
+            "growth_rate": -47.01383590698242,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 0.9997373223304749,
+            "growth_rate": -0.01050848700106144,
+            "frequency_hz": 9.010427293125622
+          },
+          {
+            "magnitude": 0.9997373223304749,
+            "growth_rate": -0.01050848700106144,
+            "frequency_hz": -9.010427293125622
+          },
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": 3.0018998247092115
+          },
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": -3.0018998247092115
+          },
+          {
+            "magnitude": 0.999173641204834,
+            "growth_rate": -0.03306801617145538,
+            "frequency_hz": 6.008433932770276
+          },
+          {
+            "magnitude": 0.999173641204834,
+            "growth_rate": -0.03306801617145538,
+            "frequency_hz": -6.008433932770276
+          }
+        ],
+        "n_unstable": 2,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": 3.0018998247092115
+          },
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": -3.0018998247092115
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 9,
+      "n_fit": 160,
+      "fit_time_s": 0.022676900000078604,
+      "n_unstable": 2,
+      "max_lambda": 1.0000319480895996,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.0073256161995232105,
+      "primary_fluctuation": 0.025036441162228584,
+      "pod_floor_full_field": 0.005492874886840582,
+      "pod_floor_fluctuation": 0.018772762268781662,
+      "ratio": 1.3336579387732592,
+      "rolling_mean_full_field": 0.007310204557143152,
+      "rolling_max_full_field": 0.007335034664720297,
+      "rolling_mean_fluctuation": 0.02496575005352497,
+      "rolling_max_fluctuation": 0.025041908025741577,
+      "legacy_extrap_full_field": 0.008980181068181992,
+      "legacy_extrap_fluctuation": 0.030691174790263176,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9999969601631165,
+            "growth_rate": -0.00012159365724073723,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9994602799415588,
+            "growth_rate": -0.021594630554318428,
+            "frequency_hz": 12.015523077183968
+          },
+          {
+            "magnitude": 0.9994602799415588,
+            "growth_rate": -0.021594630554318428,
+            "frequency_hz": -12.015523077183968
+          },
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": 3.001894702067334
+          },
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": -3.001894702067334
+          },
+          {
+            "magnitude": 0.9997496604919434,
+            "growth_rate": -0.010014833882451057,
+            "frequency_hz": 9.010220110720798
+          },
+          {
+            "magnitude": 0.9997496604919434,
+            "growth_rate": -0.010014833882451057,
+            "frequency_hz": -9.010220110720798
+          },
+          {
+            "magnitude": 0.9999850988388062,
+            "growth_rate": -0.0005960508715361357,
+            "frequency_hz": 6.003669116914285
+          },
+          {
+            "magnitude": 0.9999850988388062,
+            "growth_rate": -0.0005960508715361357,
+            "frequency_hz": -6.003669116914285
+          }
+        ],
+        "n_unstable": 2,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": 3.001894702067334
+          },
+          {
+            "magnitude": 1.0000319480895996,
+            "growth_rate": 0.0012779032113030553,
+            "frequency_hz": -3.001894702067334
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 11,
+      "n_fit": 160,
+      "fit_time_s": 0.022572898999897006,
+      "n_unstable": 4,
+      "max_lambda": 1.0001059770584106,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.0034681668039411306,
+      "primary_fluctuation": 0.01185300387442112,
+      "pod_floor_full_field": 0.002732976572588086,
+      "pod_floor_fluctuation": 0.009340375661849976,
+      "ratio": 1.269007147271969,
+      "rolling_mean_full_field": 0.003424228052608669,
+      "rolling_max_full_field": 0.003427073359489441,
+      "rolling_mean_fluctuation": 0.011694400571286678,
+      "rolling_max_fluctuation": 0.011721420101821423,
+      "legacy_extrap_full_field": 0.003976826556026936,
+      "legacy_extrap_fluctuation": 0.01359142828732729,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 0.9999973773956299,
+            "growth_rate": -0.00010490431304788217,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.0000289678573608,
+            "growth_rate": 0.0011586974142119288,
+            "frequency_hz": 3.001921074186629
+          },
+          {
+            "magnitude": 1.0000289678573608,
+            "growth_rate": 0.0011586974142119288,
+            "frequency_hz": -3.001921074186629
+          },
+          {
+            "magnitude": 0.9999925494194031,
+            "growth_rate": -0.0002980243298225105,
+            "frequency_hz": 6.003633448148619
+          },
+          {
+            "magnitude": 0.9999925494194031,
+            "growth_rate": -0.0002980243298225105,
+            "frequency_hz": -6.003633448148619
+          },
+          {
+            "magnitude": 0.99968421459198,
+            "growth_rate": -0.012633411213755608,
+            "frequency_hz": 15.013171678317278
+          },
+          {
+            "magnitude": 0.99968421459198,
+            "growth_rate": -0.012633411213755608,
+            "frequency_hz": -15.013171678317278
+          },
+          {
+            "magnitude": 1.0001059770584106,
+            "growth_rate": 0.004238857422024012,
+            "frequency_hz": 9.006618324298477
+          },
+          {
+            "magnitude": 1.0001059770584106,
+            "growth_rate": 0.004238857422024012,
+            "frequency_hz": -9.006618324298477
+          },
+          {
+            "magnitude": 0.9996036291122437,
+            "growth_rate": -0.01585797779262066,
+            "frequency_hz": 12.014095567647436
+          },
+          {
+            "magnitude": 0.9996036291122437,
+            "growth_rate": -0.01585797779262066,
+            "frequency_hz": -12.014095567647436
+          }
+        ],
+        "n_unstable": 4,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.0001059770584106,
+            "growth_rate": 0.004238857422024012,
+            "frequency_hz": 9.006618324298477
+          },
+          {
+            "magnitude": 1.0001059770584106,
+            "growth_rate": 0.004238857422024012,
+            "frequency_hz": -9.006618324298477
+          },
+          {
+            "magnitude": 1.0000289678573608,
+            "growth_rate": 0.0011586974142119288,
+            "frequency_hz": 3.001921074186629
+          },
+          {
+            "magnitude": 1.0000289678573608,
+            "growth_rate": 0.0011586974142119288,
+            "frequency_hz": -3.001921074186629
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 15,
+      "n_fit": 160,
+      "fit_time_s": 0.02390910000030999,
+      "n_unstable": 7,
+      "max_lambda": 1.000126838684082,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 0.00227120122872293,
+      "primary_fluctuation": 0.007762186694890261,
+      "pod_floor_full_field": 0.0009500845335423946,
+      "pod_floor_fluctuation": 0.003247062675654888,
+      "ratio": 2.3905254201484003,
+      "rolling_mean_full_field": 0.0023975532967597246,
+      "rolling_max_full_field": 0.002460320247337222,
+      "rolling_mean_fluctuation": 0.00818801368586719,
+      "rolling_max_fluctuation": 0.00839969515800476,
+      "legacy_extrap_full_field": 0.0025787074118852615,
+      "legacy_extrap_fluctuation": 0.00881313718855381,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.0000243186950684,
+            "growth_rate": 0.0009727359283715487,
+            "frequency_hz": 3.0019409955717085
+          },
+          {
+            "magnitude": 1.0000243186950684,
+            "growth_rate": 0.0009727359283715487,
+            "frequency_hz": -3.0019409955717085
+          },
+          {
+            "magnitude": 1.0000064373016357,
+            "growth_rate": 0.00025749122141860425,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9475834369659424,
+            "growth_rate": -2.153611421585083,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.0000274181365967,
+            "growth_rate": 0.00109671032987535,
+            "frequency_hz": 6.003982167251244
+          },
+          {
+            "magnitude": 1.0000274181365967,
+            "growth_rate": 0.00109671032987535,
+            "frequency_hz": -6.003982167251244
+          },
+          {
+            "magnitude": 1.000126838684082,
+            "growth_rate": 0.00507322559133172,
+            "frequency_hz": 9.006879389306754
+          },
+          {
+            "magnitude": 1.000126838684082,
+            "growth_rate": 0.00507322559133172,
+            "frequency_hz": -9.006879389306754
+          },
+          {
+            "magnitude": 0.9999812245368958,
+            "growth_rate": -0.0007510255672968924,
+            "frequency_hz": 12.00971286293001
+          },
+          {
+            "magnitude": 0.9999812245368958,
+            "growth_rate": -0.0007510255672968924,
+            "frequency_hz": -12.00971286293001
+          },
+          {
+            "magnitude": 0.99994295835495,
+            "growth_rate": -0.0022817307617515326,
+            "frequency_hz": 15.012379376373556
+          },
+          {
+            "magnitude": 0.99994295835495,
+            "growth_rate": -0.0022817307617515326,
+            "frequency_hz": -15.012379376373556
+          },
+          {
+            "magnitude": 0.9994236826896667,
+            "growth_rate": -0.023059336468577385,
+            "frequency_hz": 18.021414661763185
+          },
+          {
+            "magnitude": 0.9994236826896667,
+            "growth_rate": -0.023059336468577385,
+            "frequency_hz": -18.021414661763185
+          },
+          {
+            "magnitude": 0.9866713881492615,
+            "growth_rate": -0.5367293953895569,
+            "frequency_hz": 20.00000055655042
+          }
+        ],
+        "n_unstable": 7,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.000126838684082,
+            "growth_rate": 0.00507322559133172,
+            "frequency_hz": 9.006879389306754
+          },
+          {
+            "magnitude": 1.000126838684082,
+            "growth_rate": 0.00507322559133172,
+            "frequency_hz": -9.006879389306754
+          },
+          {
+            "magnitude": 1.0000274181365967,
+            "growth_rate": 0.00109671032987535,
+            "frequency_hz": 6.003982167251244
+          },
+          {
+            "magnitude": 1.0000274181365967,
+            "growth_rate": 0.00109671032987535,
+            "frequency_hz": -6.003982167251244
+          },
+          {
+            "magnitude": 1.0000243186950684,
+            "growth_rate": 0.0009727359283715487,
+            "frequency_hz": 3.0019409955717085
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 23,
+      "n_fit": 160,
+      "fit_time_s": 0.030846399999973073,
+      "n_unstable": 15,
+      "max_lambda": 1.119645357131958,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 4.698670864105225,
+      "primary_fluctuation": 16.05844497680664,
+      "pod_floor_full_field": 0.00027095299446955323,
+      "pod_floor_fluctuation": 0.000926024338696152,
+      "ratio": 17341.27675283253,
+      "rolling_mean_full_field": 0.013681766111403704,
+      "rolling_max_full_field": 0.014478372409939766,
+      "rolling_mean_fluctuation": 0.0467244628816843,
+      "rolling_max_fluctuation": 0.04943011328577995,
+      "legacy_extrap_full_field": 244820736.0,
+      "legacy_extrap_fluctuation": 836713216.0,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.0000016689300537,
+            "growth_rate": 6.675714394077659e-05,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.00002121925354,
+            "growth_rate": 0.0008487611194141209,
+            "frequency_hz": 3.0019095008105356
+          },
+          {
+            "magnitude": 1.00002121925354,
+            "growth_rate": 0.0008487611194141209,
+            "frequency_hz": -3.0019095008105356
+          },
+          {
+            "magnitude": 0.9534977078437805,
+            "growth_rate": -1.9047303199768066,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.0000176429748535,
+            "growth_rate": 0.0007057127077132463,
+            "frequency_hz": 6.004042500588912
+          },
+          {
+            "magnitude": 1.0000176429748535,
+            "growth_rate": 0.0007057127077132463,
+            "frequency_hz": -6.004042500588912
+          },
+          {
+            "magnitude": 0.824707567691803,
+            "growth_rate": -7.709056854248047,
+            "frequency_hz": 3.0928104014719877
+          },
+          {
+            "magnitude": 0.824707567691803,
+            "growth_rate": -7.709056854248047,
+            "frequency_hz": -3.0928104014719877
+          },
+          {
+            "magnitude": 1.0000721216201782,
+            "growth_rate": 0.0028847609646618366,
+            "frequency_hz": 9.006693456379349
+          },
+          {
+            "magnitude": 1.0000721216201782,
+            "growth_rate": 0.0028847609646618366,
+            "frequency_hz": -9.006693456379349
+          },
+          {
+            "magnitude": 1.0000981092453003,
+            "growth_rate": 0.003924177493900061,
+            "frequency_hz": 12.00938804948948
+          },
+          {
+            "magnitude": 1.0000981092453003,
+            "growth_rate": 0.003924177493900061,
+            "frequency_hz": -12.00938804948948
+          },
+          {
+            "magnitude": 0.9662643074989319,
+            "growth_rate": -1.372714877128601,
+            "frequency_hz": 12.934927252260294
+          },
+          {
+            "magnitude": 0.9662643074989319,
+            "growth_rate": -1.372714877128601,
+            "frequency_hz": -12.934927252260294
+          },
+          {
+            "magnitude": 1.0000704526901245,
+            "growth_rate": 0.002818008419126272,
+            "frequency_hz": 15.012169917239008
+          },
+          {
+            "magnitude": 1.0000704526901245,
+            "growth_rate": 0.002818008419126272,
+            "frequency_hz": -15.012169917239008
+          },
+          {
+            "magnitude": 1.016924500465393,
+            "growth_rate": 0.6713150143623352,
+            "frequency_hz": 16.00924700355672
+          },
+          {
+            "magnitude": 1.016924500465393,
+            "growth_rate": 0.6713150143623352,
+            "frequency_hz": -16.00924700355672
+          },
+          {
+            "magnitude": 1.119645357131958,
+            "growth_rate": 4.520479202270508,
+            "frequency_hz": 19.238918648615172
+          },
+          {
+            "magnitude": 1.119645357131958,
+            "growth_rate": 4.520479202270508,
+            "frequency_hz": -19.238918648615172
+          },
+          {
+            "magnitude": 0.9999070763587952,
+            "growth_rate": -0.003717118175700307,
+            "frequency_hz": 18.013625210469737
+          },
+          {
+            "magnitude": 0.9999070763587952,
+            "growth_rate": -0.003717118175700307,
+            "frequency_hz": -18.013625210469737
+          },
+          {
+            "magnitude": 0.06710238754749298,
+            "growth_rate": -108.0614242553711,
+            "frequency_hz": 0.0
+          }
+        ],
+        "n_unstable": 15,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.119645357131958,
+            "growth_rate": 4.520479202270508,
+            "frequency_hz": 19.238918648615172
+          },
+          {
+            "magnitude": 1.119645357131958,
+            "growth_rate": 4.520479202270508,
+            "frequency_hz": -19.238918648615172
+          },
+          {
+            "magnitude": 1.016924500465393,
+            "growth_rate": 0.6713150143623352,
+            "frequency_hz": 16.00924700355672
+          },
+          {
+            "magnitude": 1.016924500465393,
+            "growth_rate": 0.6713150143623352,
+            "frequency_hz": -16.00924700355672
+          },
+          {
+            "magnitude": 1.0000981092453003,
+            "growth_rate": 0.003924177493900061,
+            "frequency_hz": 12.00938804948948
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 32,
+      "n_fit": 160,
+      "fit_time_s": 0.031001000000287604,
+      "n_unstable": 19,
+      "max_lambda": 1.141868233680725,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 42.783145904541016,
+      "primary_fluctuation": 146.21810913085938,
+      "pod_floor_full_field": 0.0003010315995197743,
+      "pod_floor_fluctuation": 0.001028822734951973,
+      "ratio": 142121.7771582503,
+      "rolling_mean_full_field": 0.027867113705724478,
+      "rolling_max_full_field": 0.030051907524466515,
+      "rolling_mean_fluctuation": 0.09516790322959423,
+      "rolling_max_fluctuation": 0.10259918868541718,
+      "legacy_extrap_full_field": 44423229440.0,
+      "legacy_extrap_fluctuation": 151823351808.0,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.141868233680725,
+            "growth_rate": 5.306628704071045,
+            "frequency_hz": 19.378400218385725
+          },
+          {
+            "magnitude": 1.141868233680725,
+            "growth_rate": 5.306628704071045,
+            "frequency_hz": -19.378400218385725
+          },
+          {
+            "magnitude": 1.0241124629974365,
+            "growth_rate": 0.953053891658783,
+            "frequency_hz": 16.06622899507241
+          },
+          {
+            "magnitude": 1.0241124629974365,
+            "growth_rate": 0.953053891658783,
+            "frequency_hz": -16.06622899507241
+          },
+          {
+            "magnitude": 0.9999538660049438,
+            "growth_rate": -0.0018454024102538824,
+            "frequency_hz": 18.014411441134197
+          },
+          {
+            "magnitude": 0.9999538660049438,
+            "growth_rate": -0.0018454024102538824,
+            "frequency_hz": -18.014411441134197
+          },
+          {
+            "magnitude": 1.0001353025436401,
+            "growth_rate": 0.005411735735833645,
+            "frequency_hz": 15.012585799868472
+          },
+          {
+            "magnitude": 1.0001353025436401,
+            "growth_rate": 0.005411735735833645,
+            "frequency_hz": -15.012585799868472
+          },
+          {
+            "magnitude": 1.0006415843963623,
+            "growth_rate": 0.025655146688222885,
+            "frequency_hz": 12.959188084192178
+          },
+          {
+            "magnitude": 1.0006415843963623,
+            "growth_rate": 0.025655146688222885,
+            "frequency_hz": -12.959188084192178
+          },
+          {
+            "magnitude": 1.0000499486923218,
+            "growth_rate": 0.001997897634282708,
+            "frequency_hz": 12.009249927886266
+          },
+          {
+            "magnitude": 1.0000499486923218,
+            "growth_rate": 0.001997897634282708,
+            "frequency_hz": -12.009249927886266
+          },
+          {
+            "magnitude": 1.0000100135803223,
+            "growth_rate": 0.0004005412047263235,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9577593207359314,
+            "growth_rate": -1.7263504266738892,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.0497928857803345,
+            "growth_rate": 1.9437156915664673,
+            "frequency_hz": 2.8758974435382028
+          },
+          {
+            "magnitude": 1.0497928857803345,
+            "growth_rate": 1.9437156915664673,
+            "frequency_hz": -2.8758974435382028
+          },
+          {
+            "magnitude": 1.0000418424606323,
+            "growth_rate": 0.0016736633842810988,
+            "frequency_hz": 3.0018685196755155
+          },
+          {
+            "magnitude": 1.0000418424606323,
+            "growth_rate": 0.0016736633842810988,
+            "frequency_hz": -3.0018685196755155
+          },
+          {
+            "magnitude": 1.00007963180542,
+            "growth_rate": 0.0031851453240960836,
+            "frequency_hz": 9.006396722605407
+          },
+          {
+            "magnitude": 1.00007963180542,
+            "growth_rate": 0.0031851453240960836,
+            "frequency_hz": -9.006396722605407
+          },
+          {
+            "magnitude": 1.0000187158584595,
+            "growth_rate": 0.0007486273534595966,
+            "frequency_hz": 6.004036808764604
+          },
+          {
+            "magnitude": 1.0000187158584595,
+            "growth_rate": 0.0007486273534595966,
+            "frequency_hz": -6.004036808764604
+          },
+          {
+            "magnitude": 0.8291183114051819,
+            "growth_rate": -7.495696544647217,
+            "frequency_hz": 9.922023044160808
+          },
+          {
+            "magnitude": 0.8291183114051819,
+            "growth_rate": -7.495696544647217,
+            "frequency_hz": -9.922023044160808
+          },
+          {
+            "magnitude": 0.7885071635246277,
+            "growth_rate": -9.50455093383789,
+            "frequency_hz": 6.2651974396890235
+          },
+          {
+            "magnitude": 0.7885071635246277,
+            "growth_rate": -9.50455093383789,
+            "frequency_hz": -6.2651974396890235
+          },
+          {
+            "magnitude": 0.4610308110713959,
+            "growth_rate": -30.971614837646484,
+            "frequency_hz": 8.54900551573643
+          },
+          {
+            "magnitude": 0.4610308110713959,
+            "growth_rate": -30.971614837646484,
+            "frequency_hz": -8.54900551573643
+          },
+          {
+            "magnitude": 0.006405639462172985,
+            "growth_rate": -202.0230712890625,
+            "frequency_hz": 15.05633392041231
+          },
+          {
+            "magnitude": 0.006405639462172985,
+            "growth_rate": -202.0230712890625,
+            "frequency_hz": -15.05633392041231
+          },
+          {
+            "magnitude": 0.09104303270578384,
+            "growth_rate": -95.85692596435547,
+            "frequency_hz": 7.0260190415259025
+          },
+          {
+            "magnitude": 0.09104303270578384,
+            "growth_rate": -95.85692596435547,
+            "frequency_hz": -7.0260190415259025
+          }
+        ],
+        "n_unstable": 19,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.141868233680725,
+            "growth_rate": 5.306628704071045,
+            "frequency_hz": 19.378400218385725
+          },
+          {
+            "magnitude": 1.141868233680725,
+            "growth_rate": 5.306628704071045,
+            "frequency_hz": -19.378400218385725
+          },
+          {
+            "magnitude": 1.0497928857803345,
+            "growth_rate": 1.9437156915664673,
+            "frequency_hz": 2.8758974435382028
+          },
+          {
+            "magnitude": 1.0497928857803345,
+            "growth_rate": 1.9437156915664673,
+            "frequency_hz": -2.8758974435382028
+          },
+          {
+            "magnitude": 1.0241124629974365,
+            "growth_rate": 0.953053891658783,
+            "frequency_hz": 16.06622899507241
+          }
+        ]
+      }
+    },
+    {
+      "window": "post_transient",
+      "rank": 63,
+      "n_fit": 160,
+      "fit_time_s": 0.06299799899989011,
+      "n_unstable": 21,
+      "max_lambda": 1.1509724855422974,
+      "max_imag_over_real": 0.0,
+      "primary_full_field": 62.124237060546875,
+      "primary_fluctuation": 212.31932067871094,
+      "pod_floor_full_field": 0.0005251680267974734,
+      "pod_floor_fluctuation": 0.0017948441673070192,
+      "ratio": 118294.01999087153,
+      "rolling_mean_full_field": 0.036745586432516575,
+      "rolling_max_full_field": 0.039599426090717316,
+      "rolling_mean_fluctuation": 0.12548847869038582,
+      "rolling_max_fluctuation": 0.1351950466632843,
+      "legacy_extrap_full_field": 351705661440.0,
+      "legacy_extrap_fluctuation": 1202009276416.0,
+      "legacy_max_imag_over_real": 0.0,
+      "eigen_summary": {
+        "eigenvalues": [
+          {
+            "magnitude": 1.111364722251892,
+            "growth_rate": 4.2235493659973145,
+            "frequency_hz": 2.8491418850119707
+          },
+          {
+            "magnitude": 1.111364722251892,
+            "growth_rate": 4.2235493659973145,
+            "frequency_hz": -2.8491418850119707
+          },
+          {
+            "magnitude": 1.00003981590271,
+            "growth_rate": 0.0015926043270155787,
+            "frequency_hz": 3.0018888205155485
+          },
+          {
+            "magnitude": 1.00003981590271,
+            "growth_rate": 0.0015926043270155787,
+            "frequency_hz": -3.0018888205155485
+          },
+          {
+            "magnitude": 1.000004768371582,
+            "growth_rate": 0.00019073441217187792,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.9571815133094788,
+            "growth_rate": -1.7504894733428955,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 1.1509724855422974,
+            "growth_rate": 5.624289035797119,
+            "frequency_hz": 19.432036935027927
+          },
+          {
+            "magnitude": 1.1509724855422974,
+            "growth_rate": 5.624289035797119,
+            "frequency_hz": -19.432036935027927
+          },
+          {
+            "magnitude": 1.0001685619354248,
+            "growth_rate": 0.006741909310221672,
+            "frequency_hz": 18.01447215392682
+          },
+          {
+            "magnitude": 1.0001685619354248,
+            "growth_rate": 0.006741909310221672,
+            "frequency_hz": -18.01447215392682
+          },
+          {
+            "magnitude": 1.0350843667984009,
+            "growth_rate": 1.3793175220489502,
+            "frequency_hz": 16.084665952372
+          },
+          {
+            "magnitude": 1.0350843667984009,
+            "growth_rate": 1.3793175220489502,
+            "frequency_hz": -16.084665952372
+          },
+          {
+            "magnitude": 1.0002788305282593,
+            "growth_rate": 0.01115166675299406,
+            "frequency_hz": 15.01271329673298
+          },
+          {
+            "magnitude": 1.0002788305282593,
+            "growth_rate": 0.01115166675299406,
+            "frequency_hz": -15.01271329673298
+          },
+          {
+            "magnitude": 1.0122843980789185,
+            "growth_rate": 0.4883822798728943,
+            "frequency_hz": 12.953220016677403
+          },
+          {
+            "magnitude": 1.0122843980789185,
+            "growth_rate": 0.4883822798728943,
+            "frequency_hz": -12.953220016677403
+          },
+          {
+            "magnitude": 1.0000061988830566,
+            "growth_rate": 0.0002479545655660331,
+            "frequency_hz": 12.009024531643655
+          },
+          {
+            "magnitude": 1.0000061988830566,
+            "growth_rate": 0.0002479545655660331,
+            "frequency_hz": -12.009024531643655
+          },
+          {
+            "magnitude": 1.0000042915344238,
+            "growth_rate": 0.0001716610131552443,
+            "frequency_hz": 6.004053504782575
+          },
+          {
+            "magnitude": 1.0000042915344238,
+            "growth_rate": 0.0001716610131552443,
+            "frequency_hz": -6.004053504782575
+          },
+          {
+            "magnitude": 0.903803825378418,
+            "growth_rate": -4.045717716217041,
+            "frequency_hz": 6.081255512426182
+          },
+          {
+            "magnitude": 0.903803825378418,
+            "growth_rate": -4.045717716217041,
+            "frequency_hz": -6.081255512426182
+          },
+          {
+            "magnitude": 1.000075101852417,
+            "growth_rate": 0.0030039611738175154,
+            "frequency_hz": 9.006387615686513
+          },
+          {
+            "magnitude": 1.000075101852417,
+            "growth_rate": 0.0030039611738175154,
+            "frequency_hz": -9.006387615686513
+          },
+          {
+            "magnitude": 0.9095491170883179,
+            "growth_rate": -3.7922511100769043,
+            "frequency_hz": 9.94235120495058
+          },
+          {
+            "magnitude": 0.9095491170883179,
+            "growth_rate": -3.7922511100769043,
+            "frequency_hz": -9.94235120495058
+          },
+          {
+            "magnitude": 0.71312016248703,
+            "growth_rate": -13.524213790893555,
+            "frequency_hz": 8.961136094615364
+          },
+          {
+            "magnitude": 0.71312016248703,
+            "growth_rate": -13.524213790893555,
+            "frequency_hz": -8.961136094615364
+          },
+          {
+            "magnitude": 0.3537963628768921,
+            "growth_rate": -41.56135177612305,
+            "frequency_hz": 6.9942988841104565
+          },
+          {
+            "magnitude": 0.3537963628768921,
+            "growth_rate": -41.56135177612305,
+            "frequency_hz": -6.9942988841104565
+          },
+          {
+            "magnitude": 0.1542828381061554,
+            "growth_rate": -74.75871276855469,
+            "frequency_hz": 12.03909481891959
+          },
+          {
+            "magnitude": 0.1542828381061554,
+            "growth_rate": -74.75871276855469,
+            "frequency_hz": -12.03909481891959
+          },
+          {
+            "magnitude": 0.041972268372774124,
+            "growth_rate": -126.82984161376953,
+            "frequency_hz": 15.226355542691712
+          },
+          {
+            "magnitude": 0.041972268372774124,
+            "growth_rate": -126.82984161376953,
+            "frequency_hz": -15.226355542691712
+          },
+          {
+            "magnitude": 0.03446134924888611,
+            "growth_rate": -134.7166748046875,
+            "frequency_hz": 3.49589116942813
+          },
+          {
+            "magnitude": 0.03446134924888611,
+            "growth_rate": -134.7166748046875,
+            "frequency_hz": -3.49589116942813
+          },
+          {
+            "magnitude": 0.02576768957078457,
+            "growth_rate": -146.34535217285156,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 0.01020983885973692,
+            "growth_rate": -183.3761444091797,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 0.00893251784145832,
+            "growth_rate": -188.7222900390625,
+            "frequency_hz": 0.8713426952078853
+          },
+          {
+            "magnitude": 0.00893251784145832,
+            "growth_rate": -188.7222900390625,
+            "frequency_hz": -0.8713426952078853
+          },
+          {
+            "magnitude": 0.00372119783423841,
+            "growth_rate": -223.74838256835938,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 0.002320305909961462,
+            "growth_rate": -242.64224243164062,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 0.002162198768928647,
+            "growth_rate": -245.46517944335938,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.0010441519552841783,
+            "growth_rate": -274.5820007324219,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 0.000477043678984046,
+            "growth_rate": -305.9161071777344,
+            "frequency_hz": 16.672719436973225
+          },
+          {
+            "magnitude": 0.000477043678984046,
+            "growth_rate": -305.9161071777344,
+            "frequency_hz": -16.672719436973225
+          },
+          {
+            "magnitude": 0.0002606074558570981,
+            "growth_rate": -330.09979248046875,
+            "frequency_hz": 5.230367241643976
+          },
+          {
+            "magnitude": 0.0002606074558570981,
+            "growth_rate": -330.09979248046875,
+            "frequency_hz": -5.230367241643976
+          },
+          {
+            "magnitude": 0.00024894304806366563,
+            "growth_rate": -331.93145751953125,
+            "frequency_hz": 13.076489752997976
+          },
+          {
+            "magnitude": 0.00024894304806366563,
+            "growth_rate": -331.93145751953125,
+            "frequency_hz": -13.076489752997976
+          },
+          {
+            "magnitude": 0.00017420058429706842,
+            "growth_rate": -346.2121276855469,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 0.00014953715435694903,
+            "growth_rate": -352.318603515625,
+            "frequency_hz": 8.145018799077878
+          },
+          {
+            "magnitude": 0.00014953715435694903,
+            "growth_rate": -352.318603515625,
+            "frequency_hz": -8.145018799077878
+          },
+          {
+            "magnitude": 9.827745816437528e-05,
+            "growth_rate": -369.1086120605469,
+            "frequency_hz": 0.0
+          },
+          {
+            "magnitude": 6.63454266032204e-05,
+            "growth_rate": -384.825439453125,
+            "frequency_hz": 8.479371737148153
+          },
+          {
+            "magnitude": 6.63454266032204e-05,
+            "growth_rate": -384.825439453125,
+            "frequency_hz": -8.479371737148153
+          },
+          {
+            "magnitude": 4.1986404539784417e-05,
+            "growth_rate": -403.1265869140625,
+            "frequency_hz": 14.212007184692764
+          },
+          {
+            "magnitude": 4.1986404539784417e-05,
+            "growth_rate": -403.1265869140625,
+            "frequency_hz": -14.212007184692764
+          },
+          {
+            "magnitude": 2.6545822038315237e-05,
+            "growth_rate": -421.46551513671875,
+            "frequency_hz": 20.00000055655042
+          },
+          {
+            "magnitude": 2.767165824479889e-05,
+            "growth_rate": -419.8040771484375,
+            "frequency_hz": 10.520945636461246
+          },
+          {
+            "magnitude": 2.767165824479889e-05,
+            "growth_rate": -419.8040771484375,
+            "frequency_hz": -10.520945636461246
+          },
+          {
+            "magnitude": 3.5702942113857716e-05,
+            "growth_rate": -409.611083984375,
+            "frequency_hz": 5.39027828667699
+          },
+          {
+            "magnitude": 3.5702942113857716e-05,
+            "growth_rate": -409.611083984375,
+            "frequency_hz": -5.39027828667699
+          }
+        ],
+        "n_unstable": 21,
+        "dominant_unstable": [
+          {
+            "magnitude": 1.1509724855422974,
+            "growth_rate": 5.624289035797119,
+            "frequency_hz": 19.432036935027927
+          },
+          {
+            "magnitude": 1.1509724855422974,
+            "growth_rate": 5.624289035797119,
+            "frequency_hz": -19.432036935027927
+          },
+          {
+            "magnitude": 1.111364722251892,
+            "growth_rate": 4.2235493659973145,
+            "frequency_hz": 2.8491418850119707
+          },
+          {
+            "magnitude": 1.111364722251892,
+            "growth_rate": 4.2235493659973145,
+            "frequency_hz": -2.8491418850119707
+          },
+          {
+            "magnitude": 1.0350843667984009,
+            "growth_rate": 1.3793175220489502,
+            "frequency_hz": 16.084665952372
+          }
+        ]
+      }
+    }
+  ],
+  "window_energy_ranks": {
+    "full": {
+      "n_fit": 319,
+      "r99": 11,
+      "r999": 23
+    },
+    "post_transient": {
+      "n_fit": 160,
+      "r99": 5,
+      "r999": 8
+    }
+  },
+  "rank_convention_checks": [
+    {
+      "window": "full",
+      "which": "r99",
+      "r": 11,
+      "r_plus1": 12,
+      "primary_full_field_at_r": 0.06355144828557968,
+      "primary_full_field_at_r_plus1": 0.05789679288864136,
+      "relative_change": -0.08897760081765767
+    },
+    {
+      "window": "full",
+      "which": "r999",
+      "r": 23,
+      "r_plus1": 24,
+      "primary_full_field_at_r": 0.01762651465833187,
+      "primary_full_field_at_r_plus1": 0.01686079055070877,
+      "relative_change": -0.043441606152192454
+    },
+    {
+      "window": "post_transient",
+      "which": "r99",
+      "r": 5,
+      "r_plus1": 6,
+      "primary_full_field_at_r": 0.036173462867736816,
+      "primary_full_field_at_r_plus1": 0.036217983812093735,
+      "relative_change": 0.0012307625764141773
+    },
+    {
+      "window": "post_transient",
+      "which": "r999",
+      "r": 8,
+      "r_plus1": 9,
+      "primary_full_field_at_r": 0.014001619070768356,
+      "primary_full_field_at_r_plus1": 0.0073256161995232105,
+      "relative_change": -0.47680220676642016
+    }
+  ]
+}

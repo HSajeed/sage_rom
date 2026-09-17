@@ -1,0 +1,174 @@
+{
+  "20": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      19
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.06208164989948273,
+        "fluctuation": 0.21217377483844757,
+        "fit_time_s": 0.0044188000001668115,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.014815391041338444,
+        "fluctuation": 0.05063391849398613,
+        "fit_time_s": 0.005119200000081037,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.0026693008840084076,
+        "fluctuation": 0.009122753515839577,
+        "fit_time_s": 0.008150300000124844,
+        "max_imag_over_real": 0.0
+      },
+      "19": {
+        "error": "torch.linalg.eig: input tensor should not contain infs or NaNs."
+      }
+    }
+  },
+  "50": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      32
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.03967074677348137,
+        "fluctuation": 0.13558098673820496,
+        "fit_time_s": 0.008377300000120158,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.014892836101353168,
+        "fluctuation": 0.05089860409498215,
+        "fit_time_s": 0.009164299999611103,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.0009780830005183816,
+        "fluctuation": 0.0033427521120756865,
+        "fit_time_s": 0.009574400000019523,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 45924597760.0,
+        "fluctuation": 156954509312.0,
+        "fit_time_s": 0.016364699999940058,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "100": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      32
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.03711548447608948,
+        "fluctuation": 0.1268479824066162,
+        "fit_time_s": 0.013153500000044005,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.014076903462409973,
+        "fluctuation": 0.04811002314090729,
+        "fit_time_s": 0.013230900000053225,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.0009004870662465692,
+        "fluctuation": 0.0030775556806474924,
+        "fit_time_s": 0.015221500000279775,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 15362.5341796875,
+        "fluctuation": 52503.8671875,
+        "fit_time_s": 0.02130329999999958,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "160": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      32
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.036173462867736816,
+        "fluctuation": 0.12362848222255707,
+        "fit_time_s": 0.02501350000011371,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.014001619070768356,
+        "fluctuation": 0.04785272851586342,
+        "fit_time_s": 0.020926700000018172,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.00227120122872293,
+        "fluctuation": 0.007762186694890261,
+        "fit_time_s": 0.0247588000001997,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 42.783145904541016,
+        "fluctuation": 146.21810913085938,
+        "fit_time_s": 0.030855399999836663,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "319": {
+    "r99_rank": 11,
+    "ranks": [
+      8,
+      11,
+      15,
+      32
+    ],
+    "per_rank": {
+      "8": {
+        "full_field": 0.07979170978069305,
+        "fluctuation": 0.2727006673812866,
+        "fit_time_s": 0.07117319999997562,
+        "max_imag_over_real": 0.0
+      },
+      "11": {
+        "full_field": 0.06355144828557968,
+        "fluctuation": 0.21719704568386078,
+        "fit_time_s": 0.07860099999970771,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.03648151829838753,
+        "fluctuation": 0.12468130886554718,
+        "fit_time_s": 0.071296398999948,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 0.030452605336904526,
+        "fluctuation": 0.10407654941082001,
+        "fit_time_s": 0.07710240000005797,
+        "max_imag_over_real": 0.0
+      }
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "20": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      19
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.062085829616153436,
+        "fluctuation": 0.21219210100242034,
+        "fit_time_s": 0.005301300000610354,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.01481913524142845,
+        "fluctuation": 0.0506476833982674,
+        "fit_time_s": 0.006484899000497535,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.002687132686249315,
+        "fluctuation": 0.009183872292481514,
+        "fit_time_s": 0.011158698000144796,
+        "max_imag_over_real": 0.0
+      },
+      "19": {
+        "full_field": 0.002850114529874782,
+        "fluctuation": 0.009740898912532313,
+        "fit_time_s": 0.013700599000003422,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "50": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      32
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.0396727687151422,
+        "fluctuation": 0.13559049139385043,
+        "fit_time_s": 0.010877898999751778,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.01489301181286528,
+        "fluctuation": 0.050900172976081744,
+        "fit_time_s": 0.011338698999679764,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.0009464751479980052,
+        "fluctuation": 0.0032347888631260313,
+        "fit_time_s": 0.01336229899970931,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 2.0743186968264456e-05,
+        "fluctuation": 7.08944448595541e-05,
+        "fit_time_s": 0.031032695999783755,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "100": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      32
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.03711508583118434,
+        "fluctuation": 0.12684904252862106,
+        "fit_time_s": 0.02288519699959579,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.014076225049686648,
+        "fluctuation": 0.04810862294894404,
+        "fit_time_s": 0.021739996999713185,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.0009000191743816533,
+        "fluctuation": 0.0030760152636314054,
+        "fit_time_s": 0.025730296999427082,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 3.532473725185934e-05,
+        "fluctuation": 0.00012073012893879881,
+        "fit_time_s": 0.046605993999946804,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "160": {
+    "r99_rank": 5,
+    "ranks": [
+      5,
+      8,
+      15,
+      32
+    ],
+    "per_rank": {
+      "5": {
+        "full_field": 0.036173237634868745,
+        "fluctuation": 0.12363006729969782,
+        "fit_time_s": 0.038426695999987714,
+        "max_imag_over_real": 0.0
+      },
+      "8": {
+        "full_field": 0.01400159575678546,
+        "fluctuation": 0.04785356077847885,
+        "fit_time_s": 0.03892659600023762,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.002078227830259771,
+        "fluctuation": 0.007102804816991403,
+        "fit_time_s": 0.04236559500077419,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 0.00013829116669272868,
+        "fluctuation": 0.0004726407521978455,
+        "fit_time_s": 0.06275589199958631,
+        "max_imag_over_real": 0.0
+      }
+    }
+  },
+  "319": {
+    "r99_rank": 11,
+    "ranks": [
+      8,
+      11,
+      15,
+      32
+    ],
+    "per_rank": {
+      "8": {
+        "full_field": 0.07978440548963557,
+        "fluctuation": 0.2726809117755604,
+        "fit_time_s": 0.16504788000020199,
+        "max_imag_over_real": 0.0
+      },
+      "11": {
+        "full_field": 0.06360105659464883,
+        "fluctuation": 0.21737072546552708,
+        "fit_time_s": 0.17057037899940042,
+        "max_imag_over_real": 0.0
+      },
+      "15": {
+        "full_field": 0.036672671370728875,
+        "fluctuation": 0.1253369929279587,
+        "fit_time_s": 0.15956068000014056,
+        "max_imag_over_real": 0.0
+      },
+      "32": {
+        "full_field": 0.026154874681182758,
+        "fluctuation": 0.08939008859778884,
+        "fit_time_s": 0.1751263790001758,
+        "max_imag_over_real": 0.0
+      }
+    }
+  }
+}

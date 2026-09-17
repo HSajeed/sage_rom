@@ -21,6 +21,41 @@ def relative_l2_error(pred: pt.Tensor, true: pt.Tensor) -> float:
     return (pt.linalg.norm(pred - true) / pt.linalg.norm(true)).item()
 
 
+def fluctuation_relative_error(pred: pt.Tensor, true: pt.Tensor, reference_mean: pt.Tensor) -> float:
+    """Error normalised by the fluctuation of the true data about the
+    TRAINING temporal mean, not the test data's own mean -- this is what
+    makes the mean predictor score exactly 1.0 (its numerator equals its
+    denominator by construction) and gives a meaningful floor: any model
+    scoring >=1.0 here is not doing better than predicting the training
+    mean, regardless of what its full-field relative_l2_error says."""
+    mean_col = reference_mean.unsqueeze(-1) if reference_mean.dim() == 1 else reference_mean
+    denom = pt.linalg.norm(true - mean_col)
+    return (pt.linalg.norm(pred - true) / denom).item()
+
+
+def mean_predictor(train_mean: pt.Tensor, n_steps: int) -> pt.Tensor:
+    """Repeats the training temporal mean for n_steps columns -- the
+    null forecast baseline any real model must beat."""
+    return train_mean.unsqueeze(-1).expand(-1, n_steps)
+
+
+def persistence_predictor(last_snapshot: pt.Tensor, n_steps: int) -> pt.Tensor:
+    """Repeats the last training snapshot for n_steps columns -- the
+    "nothing changes" baseline."""
+    return last_snapshot.unsqueeze(-1).expand(-1, n_steps)
+
+
+def pod_projection_floor(pod_modes: pt.Tensor, mean: pt.Tensor, test: pt.Tensor, r: int) -> pt.Tensor:
+    """POD(train) projection of test data onto the first r modes:
+    mean + U_r U_r^T (test - mean). This is the best any rank-r LINEAR
+    subspace model fit on the training data could possibly do on the test
+    data -- a floor, not a forecast (see pod_baseline.py's module
+    docstring on why POD itself has no forecast)."""
+    Ur = pod_modes[:, :r]
+    centered = test - mean.unsqueeze(-1)
+    return mean.unsqueeze(-1) + Ur @ (Ur.T @ centered)
+
+
 def time_call(fn, *args, **kwargs) -> tuple:
     """Returns (result, elapsed_seconds)."""
     t0 = time.perf_counter()

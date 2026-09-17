@@ -1,0 +1,374 @@
+{
+  "description": "Precision diagnostic: orthogonality loss of POD modes, POD projection floor monotonicity, and DMD primary-protocol errors at fixed ranks, compared across float32 (as run_phase1.py uses), float64 via flowTorch's SVD class, and a float64 torch.linalg.svd reference bypassing flowTorch's SVD entirely.",
+  "flowtorch_version": "1.6.1",
+  "t_split": 8.0,
+  "ranks_requested": [
+    11,
+    15,
+    23,
+    32,
+    63
+  ],
+  "windows": {
+    "full": {
+      "n_fit": 319,
+      "ranks": [
+        11,
+        15,
+        23,
+        32,
+        63
+      ],
+      "orthogonality_loss": {
+        "float32_flowtorch_svd": {
+          "11": 5.575133855018066e-06,
+          "15": 1.881590833363589e-05,
+          "23": 6.210824358277023e-05,
+          "32": 0.0008604342001490295,
+          "63": 0.22685636579990387
+        },
+        "float64_flowtorch_svd": {
+          "11": 5.4557427133254756e-15,
+          "15": 1.443366765504967e-14,
+          "23": 5.2641674096366376e-14,
+          "32": 2.3540118514610506e-13,
+          "63": 3.202982197194195e-11
+        },
+        "float64_torch_linalg_svd_reference": {
+          "11": 3.893826369834563e-15,
+          "15": 4.531450245435768e-15,
+          "23": 6.478416861708262e-15,
+          "32": 7.69728596278195e-15,
+          "63": 1.1758386850377071e-14
+        }
+      },
+      "pod_projection_floor": {
+        "float32_flowtorch_svd": {
+          "11": {
+            "full_field": 0.016218366101384163,
+            "fluctuation": 0.05542880669236183
+          },
+          "15": {
+            "full_field": 0.011295540258288383,
+            "fluctuation": 0.03860427811741829
+          },
+          "23": {
+            "full_field": 0.00406181626021862,
+            "fluctuation": 0.013881892897188663
+          },
+          "32": {
+            "full_field": 0.002248098375275731,
+            "fluctuation": 0.007683228235691786
+          },
+          "63": {
+            "full_field": 0.0005579612334258854,
+            "fluctuation": 0.0019069199915975332
+          }
+        },
+        "float64_flowtorch_svd": {
+          "11": {
+            "full_field": 0.01621827849460778,
+            "fluctuation": 0.055429565968428615
+          },
+          "15": {
+            "full_field": 0.011295501085043716,
+            "fluctuation": 0.03860488169247147
+          },
+          "23": {
+            "full_field": 0.004061845217810186,
+            "fluctuation": 0.013882257449766459
+          },
+          "32": {
+            "full_field": 0.002248113286786243,
+            "fluctuation": 0.007683426066203614
+          },
+          "63": {
+            "full_field": 0.0005529692629335635,
+            "fluctuation": 0.001889895172812579
+          }
+        },
+        "float64_torch_linalg_svd_reference": {
+          "11": {
+            "full_field": 0.01621827849460779,
+            "fluctuation": 0.05542956596842865
+          },
+          "15": {
+            "full_field": 0.011295501085043734,
+            "fluctuation": 0.03860488169247153
+          },
+          "23": {
+            "full_field": 0.0040618452178102,
+            "fluctuation": 0.013882257449766506
+          },
+          "32": {
+            "full_field": 0.002248113286786256,
+            "fluctuation": 0.007683426066203658
+          },
+          "63": {
+            "full_field": 0.0005529692629335773,
+            "fluctuation": 0.0018898951728126263
+          }
+        }
+      },
+      "singular_value_ratio_s_r_over_s1_float64_reference": {
+        "11": 0.10128546358836768,
+        "15": 0.038001963822155524,
+        "23": 0.020285311556093536,
+        "32": 0.009022748171040781,
+        "63": 0.001741068614987915
+      },
+      "pod_floor_monotone": {
+        "float32_flowtorch_svd": true,
+        "float64_flowtorch_svd": true,
+        "float64_torch_linalg_svd_reference": true
+      },
+      "dmd_primary": {
+        "float32": {
+          "11": {
+            "full_field": 0.06355144828557968,
+            "fluctuation": 0.21719704568386078,
+            "n_unstable": 3,
+            "max_lambda": 1.0019102096557617
+          },
+          "15": {
+            "full_field": 0.03648151829838753,
+            "fluctuation": 0.12468130886554718,
+            "n_unstable": 7,
+            "max_lambda": 1.0017794370651245
+          },
+          "23": {
+            "full_field": 0.01762651465833187,
+            "fluctuation": 0.060241375118494034,
+            "n_unstable": 6,
+            "max_lambda": 1.0020087957382202
+          },
+          "32": {
+            "full_field": 0.030452605336904526,
+            "fluctuation": 0.10407654941082001,
+            "n_unstable": 12,
+            "max_lambda": 1.0024875402450562
+          },
+          "63": {
+            "full_field": 0.15024730563163757,
+            "fluctuation": 0.5134937167167664,
+            "n_unstable": 39,
+            "max_lambda": 1.074702262878418
+          }
+        },
+        "float64": {
+          "11": {
+            "full_field": 0.06360105659464883,
+            "fluctuation": 0.21737072546552708,
+            "n_unstable": 3,
+            "max_lambda": 1.0019102486153373
+          },
+          "15": {
+            "full_field": 0.036672671370728875,
+            "fluctuation": 0.1253369929279587,
+            "n_unstable": 7,
+            "max_lambda": 1.001787546355338
+          },
+          "23": {
+            "full_field": 0.017086425293132448,
+            "fluctuation": 0.058396650314347466,
+            "n_unstable": 6,
+            "max_lambda": 1.0018616909277933
+          },
+          "32": {
+            "full_field": 0.026154874681182758,
+            "fluctuation": 0.08939008859778884,
+            "n_unstable": 10,
+            "max_lambda": 1.0015763453050777
+          },
+          "63": {
+            "full_field": 0.01133417174537326,
+            "fluctuation": 0.03873704725606639,
+            "n_unstable": 10,
+            "max_lambda": 1.0019763187557365
+          }
+        },
+        "float64_status": "ok"
+      }
+    },
+    "post_transient": {
+      "n_fit": 160,
+      "ranks": [
+        11,
+        15,
+        23,
+        32,
+        63
+      ],
+      "orthogonality_loss": {
+        "float32_flowtorch_svd": {
+          "11": 1.9552453522919677e-05,
+          "15": 0.002084392821416259,
+          "23": 0.4854426980018616,
+          "32": 1.694928765296936,
+          "63": 5.4279985427856445
+        },
+        "float64_flowtorch_svd": {
+          "11": 3.47877020097203e-14,
+          "15": 8.235456636905696e-13,
+          "23": 5.761502480979615e-11,
+          "32": 8.596597218683199e-10,
+          "63": 4.786828813633923e-07
+        },
+        "float64_torch_linalg_svd_reference": {
+          "11": 4.8520307919426796e-15,
+          "15": 5.86471420291082e-15,
+          "23": 6.9975047752088215e-15,
+          "32": 8.571405841643941e-15,
+          "63": 1.2414066559487192e-14
+        }
+      },
+      "pod_projection_floor": {
+        "float32_flowtorch_svd": {
+          "11": {
+            "full_field": 0.002732976572588086,
+            "fluctuation": 0.009340375661849976
+          },
+          "15": {
+            "full_field": 0.0009500845335423946,
+            "fluctuation": 0.003247062675654888
+          },
+          "23": {
+            "full_field": 0.00027095299446955323,
+            "fluctuation": 0.000926024338696152
+          },
+          "32": {
+            "full_field": 0.0003010315995197743,
+            "fluctuation": 0.001028822734951973
+          },
+          "63": {
+            "full_field": 0.0005251680267974734,
+            "fluctuation": 0.0017948441673070192
+          }
+        },
+        "float64_flowtorch_svd": {
+          "11": {
+            "full_field": 0.0027329840772117656,
+            "fluctuation": 0.009340579596585482
+          },
+          "15": {
+            "full_field": 0.0009499722338662529,
+            "fluctuation": 0.0032467409301654366
+          },
+          "23": {
+            "full_field": 0.0002410426835968648,
+            "fluctuation": 0.0008238168641685175
+          },
+          "32": {
+            "full_field": 5.943748754532706e-05,
+            "fluctuation": 0.00020314080424668624
+          },
+          "63": {
+            "full_field": 1.1061524108368426e-05,
+            "fluctuation": 3.780521344975209e-05
+          }
+        },
+        "float64_torch_linalg_svd_reference": {
+          "11": {
+            "full_field": 0.0027329840772117703,
+            "fluctuation": 0.0093405795965855
+          },
+          "15": {
+            "full_field": 0.0009499722338662445,
+            "fluctuation": 0.003246740930165408
+          },
+          "23": {
+            "full_field": 0.0002410426835968619,
+            "fluctuation": 0.0008238168641685075
+          },
+          "32": {
+            "full_field": 5.943748754517958e-05,
+            "fluctuation": 0.00020314080424618222
+          },
+          "63": {
+            "full_field": 1.1061523857000852e-05,
+            "fluctuation": 3.780521259064763e-05
+          }
+        }
+      },
+      "singular_value_ratio_s_r_over_s1_float64_reference": {
+        "11": 0.009651172985310985,
+        "15": 0.005168877841141783,
+        "23": 0.0008402475350827492,
+        "32": 0.00016997252811260855,
+        "63": 6.441159332786658e-06
+      },
+      "pod_floor_monotone": {
+        "float32_flowtorch_svd": false,
+        "float64_flowtorch_svd": true,
+        "float64_torch_linalg_svd_reference": true
+      },
+      "dmd_primary": {
+        "float32": {
+          "11": {
+            "full_field": 0.0034681668039411306,
+            "fluctuation": 0.01185300387442112,
+            "n_unstable": 4,
+            "max_lambda": 1.0001059770584106
+          },
+          "15": {
+            "full_field": 0.00227120122872293,
+            "fluctuation": 0.007762186694890261,
+            "n_unstable": 7,
+            "max_lambda": 1.000126838684082
+          },
+          "23": {
+            "full_field": 4.698670864105225,
+            "fluctuation": 16.05844497680664,
+            "n_unstable": 15,
+            "max_lambda": 1.119645357131958
+          },
+          "32": {
+            "full_field": 42.783145904541016,
+            "fluctuation": 146.21810913085938,
+            "n_unstable": 19,
+            "max_lambda": 1.141868233680725
+          },
+          "63": {
+            "full_field": 62.124237060546875,
+            "fluctuation": 212.31932067871094,
+            "n_unstable": 21,
+            "max_lambda": 1.1509724855422974
+          }
+        },
+        "float64": {
+          "11": {
+            "full_field": 0.0034696813979192723,
+            "fluctuation": 0.011858406180368592,
+            "n_unstable": 4,
+            "max_lambda": 1.0001079051655664
+          },
+          "15": {
+            "full_field": 0.002078227830259771,
+            "fluctuation": 0.007102804816991403,
+            "n_unstable": 6,
+            "max_lambda": 1.000116620537296
+          },
+          "23": {
+            "full_field": 0.0004068353217089437,
+            "fluctuation": 0.0013904499981579664,
+            "n_unstable": 15,
+            "max_lambda": 1.0002125884444544
+          },
+          "32": {
+            "full_field": 0.00013829116669272868,
+            "fluctuation": 0.0004726407521978455,
+            "n_unstable": 14,
+            "max_lambda": 1.0002620582891175
+          },
+          "63": {
+            "full_field": 1.284506493337077e-05,
+            "fluctuation": 4.390086002837769e-05,
+            "n_unstable": 6,
+            "max_lambda": 1.0000844008661438
+          }
+        },
+        "float64_status": "ok"
+      }
+    }
+  }
+}

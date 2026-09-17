@@ -71,6 +71,7 @@ def load_cylinder_snapshots(
     t_min: float | None = None,
     domain_lower: tuple[float, float] = (0.1, -1.0),
     domain_upper: tuple[float, float] = (0.75, 1.0),
+    dtype: pt.dtype = pt.float64,
 ) -> CylinderSnapshots:
     """
     t_min default (None) selects the first available time step excluding 0,
@@ -81,6 +82,15 @@ def load_cylinder_snapshots(
     domain_lower/upper matches the tutorials' spatial crop (1d before, 7.5d
     after the cylinder center) -- change if you want the full domain, but the
     default keeps this consistent with the documented, verified example.
+
+    dtype defaults to float64: flowTorch's SVD picks a Gram-matrix +
+    eigendecomposition path for economy SVD, which squares the condition
+    number. On this dataset that destroys POD mode orthogonality once
+    s_r/s_1 drops below ~1e-3 (float32's precision floor), which in turn
+    causes a non-monotone POD projection floor and multi-order-of-magnitude
+    DMD forecast blowups at high rank that are a numerical artifact, not a
+    physical instability -- see phase1/results_v2/precision_check.json and
+    the float64-vs-float32 comparison it contains.
     """
     from flowtorch import DATASETS
     from flowtorch.data import FOAMDataloader, mask_box
@@ -112,7 +122,7 @@ def load_cylinder_snapshots(
     # U is a 3-component field even in this 2D case (OpenFOAM always stores
     # 3 components; z is ~0 here). Stack [u_x; u_y] into one column per
     # snapshot -- shape (2 * n_selected, n_snapshots).
-    data_matrix = pt.zeros((2 * n_selected, len(window_times)), dtype=pt.float32)
+    data_matrix = pt.zeros((2 * n_selected, len(window_times)), dtype=dtype)
     for i, t in enumerate(window_times):
         u = loader.load_snapshot("U", t)          # (n_cells_full, 3)
         u_x = pt.masked_select(u[:, 0], mask)

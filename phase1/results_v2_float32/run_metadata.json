@@ -1,0 +1,92 @@
+{
+  "timestamp": "2026-09-17T04:34:29.866681",
+  "protocol": "Primary: DMD forecast restarted from the last training snapshot, covering the full held-out test window (n_test steps). Rolling origins: fixed horizon H, origins = the last training snapshot plus true test snapshots at the given test indices. Legacy: from-x0 rollout extrapolation error (provenance only). All errors reported as full-field relative L2 and fluctuation-normalised (relative to the training temporal mean). POD projection floor is window-specific: the basis is fitted on the same fit window as the DMD row it's compared against, not a single full-window basis.",
+  "t_split": 8.0,
+  "n_train": 319,
+  "n_test": 81,
+  "dt": 0.025,
+  "rolling_horizon_H": 20,
+  "rolling_origins": [
+    "last_train",
+    "test_idx_0",
+    "test_idx_20",
+    "test_idx_40"
+  ],
+  "sweep_rank_ladder": [
+    1,
+    2,
+    4,
+    8,
+    11,
+    15,
+    23,
+    32,
+    63
+  ],
+  "windows": [
+    "full",
+    "post_transient"
+  ],
+  "window_energy_ranks": {
+    "full": {
+      "n_fit": 319,
+      "r99": 11,
+      "r999": 23
+    },
+    "post_transient": {
+      "n_fit": 160,
+      "r99": 5,
+      "r999": 8
+    }
+  },
+  "rank_convention_checks": [
+    {
+      "window": "full",
+      "which": "r99",
+      "r": 11,
+      "r_plus1": 12,
+      "primary_full_field_at_r": 0.06355144828557968,
+      "primary_full_field_at_r_plus1": 0.05789679288864136,
+      "relative_change": -0.08897760081765767
+    },
+    {
+      "window": "full",
+      "which": "r999",
+      "r": 23,
+      "r_plus1": 24,
+      "primary_full_field_at_r": 0.01762651465833187,
+      "primary_full_field_at_r_plus1": 0.01686079055070877,
+      "relative_change": -0.043441606152192454
+    },
+    {
+      "window": "post_transient",
+      "which": "r99",
+      "r": 5,
+      "r_plus1": 6,
+      "primary_full_field_at_r": 0.036173462867736816,
+      "primary_full_field_at_r_plus1": 0.036217983812093735,
+      "relative_change": 0.0012307625764141773
+    },
+    {
+      "window": "post_transient",
+      "which": "r999",
+      "r": 8,
+      "r_plus1": 9,
+      "primary_full_field_at_r": 0.014001619070768356,
+      "primary_full_field_at_r_plus1": 0.0073256161995232105,
+      "relative_change": -0.47680220676642016
+    }
+  ],
+  "data_efficiency_counts": [
+    20,
+    50,
+    100,
+    160,
+    319
+  ],
+  "data_efficiency_fixed_ranks": [
+    8,
+    15,
+    32
+  ]
+}
