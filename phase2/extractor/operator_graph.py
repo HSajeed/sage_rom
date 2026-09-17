@@ -30,6 +30,7 @@ import networkx as nx
 from .ast_parser import ExtractedCall, extract_calls
 from .fvschemes_parser import SchemeEntry, parse_fvschemes, scheme_for
 from .ontology import lookup, is_known_namespace
+from . import dispatch as dispatch_mod
 
 
 # Map a namespace's fvSchemes block name, so a fvm::laplacian(...) call
@@ -52,22 +53,84 @@ def build_operator_graph(
     source_path: str,
     fvschemes_path: str | None = None,
     piso_skeleton: bool = True,
+    extra_sources: list[str] | None = None,
+    include_unqualified: bool = False,
+    expand_dispatch: bool = False,
+    turbulence_properties_path: str | None = None,
 ) -> nx.DiGraph:
+    """
+    `extra_sources`: additional files (e.g. pEqn.H alongside UEqn.H) whose
+    calls are folded into the same graph -- default None keeps single-file
+    behaviour unchanged.
+    `include_unqualified`: forwarded to extract_calls (default off).
+    `expand_dispatch`/`turbulence_properties_path`: if both given, calls
+    matching the dispatch.py table (currently `turbulence->divDevReff`) get
+    additional nodes for their runtime-resolved expansion, tagged
+    `expanded_from`/`provenance`; default off leaves the graph unchanged.
+    """
+    import os
+
+    all_sources = [source_path] + list(extra_sources or [])
+    multi_file = len(all_sources) > 1
+
     # None = capture every qualified (namespace::function) call, not just
     # fvm/fvc/fvi. Narrowing to known namespaces belongs at the ontology
     # lookup stage (which correctly flags unknowns), not at extraction --
     # filtering here would silently drop exactly the custom-namespace
     # modifications this pipeline exists to catch (see
     # validation/detect_modification.py's unknown-namespace test).
-    calls = extract_calls(source_path, known_namespaces=None)
+    calls: list[ExtractedCall] = []
+    for src in all_sources:
+        calls.extend(extract_calls(src, known_namespaces=None, include_unqualified=include_unqualified))
     scheme_entries: list[SchemeEntry] = (
         parse_fvschemes(fvschemes_path) if fvschemes_path else []
     )
 
+    turbulence_selection = (
+        dispatch_mod.parse_turbulence_properties(turbulence_properties_path)
+        if (expand_dispatch and turbulence_properties_path) else None
+    )
+
     g = nx.DiGraph()
 
-    for i, call in enumerate(calls):
-        node_id = f"{call.function}_{call.line_start}"
+    def _node_id(call: ExtractedCall) -> str:
+        if multi_file:
+            return f"{os.path.basename(call.source_file)}::{call.function}_{call.line_start}"
+        return f"{call.function}_{call.line_start}"
+
+    def _assign_nesting(batch: list[tuple[str, ExtractedCall]]) -> None:
+        """
+        Mark a node `nested_in: <parent node id>` when it is a sub-expression
+        argument of another batch-member call -- e.g. `fvc::grad(U)` inside
+        `fvc::div(... dev2(T(fvc::grad(U))))`'s argument. Position-based, not
+        text-based: a call is nested in another iff they're in the same
+        source_file and the child's [start_byte, end_byte) lies strictly
+        inside the parent's own argument_list [args_start_byte,
+        args_end_byte). Raw-text substring matching would wrongly conflate
+        two textually identical calls on different lines (e.g. two separate
+        `fvc::grad(p)` terms) -- byte ranges from tree-sitter can't do that.
+        When several candidate parents contain the child (e.g. both `T(...)`
+        and the outer `fvc::div(...)`), the smallest (innermost) containing
+        argument_list wins.
+        """
+        for node_id, call in batch:
+            candidates: list[tuple[int, str]] = []
+            for other_id, other_call in batch:
+                if other_id == node_id:
+                    continue
+                if other_call.source_file != call.source_file:
+                    continue
+                a_start, a_end = other_call.args_start_byte, other_call.args_end_byte
+                if a_start is None or a_end is None:
+                    continue
+                if a_start < call.start_byte and call.end_byte < a_end:
+                    candidates.append((a_end - a_start, other_id))
+            if candidates:
+                candidates.sort(key=lambda t: t[0])
+                g.nodes[node_id]["nested_in"] = candidates[0][1]
+
+    def _add_call_node(call: ExtractedCall, expanded_from: str | None = None, provenance: str | None = None) -> str:
+        node_id = _node_id(call)
         meaning = lookup(call.namespace, call.function)
         block = _BLOCK_FOR_FUNCTION.get(call.function)
         scheme = (
@@ -105,7 +168,47 @@ def build_operator_graph(
             source_file=call.source_file,
             line_start=call.line_start,
             line_end=call.line_end,
+            receiver=call.receiver,
+            access=call.access,
+            sign=call.sign,
+            side=call.side,
+            expanded_from=expanded_from,
+            provenance=provenance,
+            expanded=False,
+            nested_in=None,
         )
+        return node_id
+
+    main_batch: list[tuple[str, ExtractedCall]] = []
+    for call in calls:
+        node_id = _add_call_node(call)
+        main_batch.append((node_id, call))
+
+        if (
+            expand_dispatch and turbulence_selection is not None
+            and call.receiver == "turbulence" and call.function == "divDevReff"
+        ):
+            expansion = dispatch_mod.expand(
+                call,
+                receiver_type="incompressible::momentumTransportModel/turbulence",
+                selection=turbulence_selection,
+                fixtures_dir=os.path.dirname(source_path),
+            )
+            if expansion is not None:
+                # The dispatched-to call (e.g. turbulence->divDevReff(U)) is
+                # replaced by its expansion -- it stays in the graph for
+                # provenance/audit, but is no longer itself a term of the
+                # equation, so physical_terms() must exclude it.
+                g.nodes[node_id]["expanded"] = True
+                expansion_batch: list[tuple[str, ExtractedCall]] = []
+                for expanded_call in expansion.calls:
+                    exp_node_id = _add_call_node(
+                        expanded_call, expanded_from=node_id, provenance=expansion.provenance
+                    )
+                    expansion_batch.append((exp_node_id, expanded_call))
+                _assign_nesting(expansion_batch)
+
+    _assign_nesting(main_batch)
 
     # Composition edges: terms that flow into the same LHS (e.g. ddt(U),
     # div(phi,U), laplacian(nu,U) all -> UEqn) sum into one equation.
@@ -148,6 +251,26 @@ def build_operator_graph(
         )
 
     return g
+
+
+def physical_terms(g: nx.DiGraph) -> list[tuple[str, dict]]:
+    """
+    The graph's leaf equation terms: excludes nodes replaced by a dispatch
+    expansion (`expanded=True` -- the expansion's own nodes are the real
+    terms, not the call site that dispatched to them) and nodes that are
+    themselves a sub-expression argument of another captured call
+    (`nested_in` set -- e.g. the `fvc::grad(U)` inside
+    `fvc::div(...dev2(T(fvc::grad(U))))` is part of that div's argument, not
+    a separate additive term of the equation). For graphs built without
+    expand_dispatch/nesting detection producing any matches (e.g. the
+    icoFoam graph), both attributes are False/None on every node, so this
+    returns every node -- i.e. build_from_operator_graph's behaviour is
+    unchanged when there's nothing to filter.
+    """
+    return [
+        (node_id, data) for node_id, data in g.nodes(data=True)
+        if not data.get("expanded", False) and data.get("nested_in") is None
+    ]
 
 
 def summarize(g: nx.DiGraph) -> str:

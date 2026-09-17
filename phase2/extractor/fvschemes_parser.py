@@ -29,7 +29,10 @@ _COMMENT_BLOCK_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 _LINE_COMMENT_RE = re.compile(r"//.*")
 _FOAMFILE_BLOCK_RE = re.compile(r"FoamFile\s*\{[^}]*\}", re.DOTALL)
 _BLOCK_RE = re.compile(r"(\w+)\s*\{([^}]*)\}", re.DOTALL)
-_ENTRY_RE = re.compile(r"([\w().,]+)\s+([^;]+);")
+# Key: any run of non-space chars that isn't `{`, `}` or `;` -- OpenFOAM
+# scheme keys can nest arbitrarily deep parens/commas/operators, e.g.
+# `div((nuEff*dev(T(grad(U)))))`, which `[\w().,]+` used to truncate.
+_ENTRY_RE = re.compile(r"([^\s{};]+)\s+([^;]+);")
 
 # Only these blocks describe *discretization operator* schemes; fvSchemes
 # also has structural blocks (e.g. fluxRequired, wallDist) that aren't part

@@ -151,9 +151,19 @@ _SKIP_TYPES = {"time_derivative"}  # handled by the integrator itself, not an RH
 
 
 def build_from_operator_graph(graph, collapse_duplicates: bool = True) -> list[OperatorSpec]:
+    # Prefer the graph's leaf equation terms (physical_terms) when the graph
+    # was built with expand_dispatch/nesting detection -- this excludes
+    # dispatch call sites that were replaced by their expansion, and nested
+    # sub-expression calls that aren't separate additive terms. Falls back
+    # to every node for graphs without those attributes (e.g. plain
+    # build_operator_graph(icoFoam.C) with no dispatch/nesting), which is
+    # exactly the previous behaviour -- see extractor.operator_graph.physical_terms.
+    from extractor.operator_graph import physical_terms
+    nodes = physical_terms(graph)
+
     specs: list[OperatorSpec] = []
     seen_types: set[str] = set()
-    for node_id, data in graph.nodes(data=True):
+    for node_id, data in nodes:
         ptype = data["physical_type"]
         if ptype in _SKIP_TYPES:
             continue

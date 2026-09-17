@@ -89,6 +89,31 @@ ONTOLOGY: dict[str, dict[str, OperatorMeaning]] = {
             "Reconstructs a volume field (typically a vector) from a "
             "face-flux-like quantity."
         ),
+        "snGrad": OperatorMeaning(
+            "surface_normal_gradient", "explicit",
+            "PROPOSED -- needs human review. Surface-normal gradient "
+            "evaluated on faces (e.g. the SIMPLEC pressure-flux term in "
+            "pEqn.H); not yet confirmed against upstream source by a human "
+            "reviewer."
+        ),
+        "makeRelative": OperatorMeaning(
+            "mesh_motion_flux_adjustment", "explicit",
+            "PROPOSED -- needs human review. Subtracts the mesh motion "
+            "flux from a face flux field (ALE/moving-mesh consistency); "
+            "not yet confirmed against upstream source by a human reviewer."
+        ),
+        "makeAbsolute": OperatorMeaning(
+            "mesh_motion_flux_adjustment", "explicit",
+            "PROPOSED -- needs human review. Adds the mesh motion flux "
+            "back to a face flux field (inverse of fvc::makeRelative); "
+            "not yet confirmed against upstream source by a human reviewer."
+        ),
+        "correctUf": OperatorMeaning(
+            "mesh_motion_flux_adjustment", "explicit",
+            "PROPOSED -- needs human review. Corrects the face velocity "
+            "field Uf for a moving mesh; not yet confirmed against "
+            "upstream source by a human reviewer."
+        ),
     },
     "fvi": {
         # CONFIRMED via upstream OpenFOAM-dev source

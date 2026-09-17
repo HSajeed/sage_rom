@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 import yaml
@@ -25,9 +26,17 @@ def load_ground_truth(path: str) -> dict:
         return yaml.safe_load(f)
 
 
-def run_gate1(source_path: str, ground_truth_path: str) -> int:
+def run_gate1(source_path: str, ground_truth_path: str, include_unqualified: bool = False) -> int:
     gt = load_ground_truth(ground_truth_path)
-    gt_entries = gt["entries"]
+    # Multi-file fixtures (e.g. pimpleFoam_v2006: UEqn.H, pEqn.H, ...) tag
+    # each entry with its own `source_file`; score only the entries for the
+    # file being checked. Entries without the field apply to --source
+    # (single-file answer keys like ground_truth_icofoam.yaml are unchanged).
+    gt_entries = [
+        e for e in gt["entries"]
+        if "source_file" not in e
+        or os.path.normpath(e["source_file"]) == os.path.normpath(source_path)
+    ]
 
     unreviewed = [e for e in gt_entries if not e.get("reviewed", False)]
     if unreviewed:
@@ -45,7 +54,7 @@ def run_gate1(source_path: str, ground_truth_path: str) -> int:
     # of calls on that line, not a single {line: call} slot, and remove a
     # call from the pool once it's matched so two ground-truth entries can't
     # both claim the same extracted call.
-    extracted = extract_calls(source_path, known_namespaces=None)
+    extracted = extract_calls(source_path, known_namespaces=None, include_unqualified=include_unqualified)
     pool_by_line: dict[int, list] = {}
     for c in extracted:
         pool_by_line.setdefault(c.line_start, []).append(c)
@@ -113,5 +122,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="fixtures/icoFoam.C")
     parser.add_argument("--ground-truth", default="validation/ground_truth_icofoam.yaml")
+    parser.add_argument("--include-unqualified", action="store_true",
+                         help="Also extract unqualified (member/free-function) calls, "
+                              "for multi-file fixtures whose ground truth includes them.")
     args = parser.parse_args()
-    sys.exit(run_gate1(args.source, args.ground_truth))
+    sys.exit(run_gate1(args.source, args.ground_truth, include_unqualified=args.include_unqualified))

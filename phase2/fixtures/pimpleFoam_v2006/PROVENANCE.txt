@@ -1,0 +1,101 @@
+pimpleFoam_v2006 fixture -- provenance
+=====================================
+
+Fetched: 2026-09-17
+
+Source repository
+-----------------
+Official OpenFOAM.com (OpenCFD/ESI) repository, GitLab.com hosting:
+  https://gitlab.com/openfoam/core/openfoam
+Tag: OpenFOAM-v2006
+  -> commit b45f8f6f587ce22dfe85aa87e97ed72b6afe44b5
+     (2020-06-29, Andrew Heather, "MOD: updated OpenQBMM reference";
+      GitLab release description "June 2020 release")
+
+Download method: GitLab REST API, raw file endpoint pinned to the commit:
+  https://gitlab.com/api/v4/projects/openfoam%2Fcore%2Fopenfoam/repository/files/<url-encoded path>/raw?ref=b45f8f6f587ce22dfe85aa87e97ed72b6afe44b5
+
+Integrity: for every file below, `git hash-object <local file>` equals the
+upstream blob_id reported by the API (.../repository/files/<path>?ref=<sha>).
+
+NOT used: develop.openfoam.com/Development/openfoam. On 2026-09-17 its /-/raw/
+URLs redirected to a GitLab sign-in page and its API timed out, so the files
+could not be cross-checked against that host.
+
+Patch-level check: the dataset log reports "Build : v2006 OPENFOAM=2006" with
+no patch number. GitLab compare OpenFOAM-v2006 -> maintenance-v2006 (head
+114c4476, 82 commits, 145 files) shows no change to any of the solver or
+turbulence-model files below. The only pimpleFoam-related change is in a
+tutorial. So these files are the same at every v2006 patch level.
+
+Files (local name <- upstream path @ tag; git blob id)
+-----------------------------------------------------
+pimpleFoam.C      <- applications/solvers/incompressible/pimpleFoam/pimpleFoam.C      282c75e9544bb8a214873b381b01fb74dd1fae7a
+UEqn.H            <- applications/solvers/incompressible/pimpleFoam/UEqn.H            1a6b404885a6f8648ae02cae50e3f57f7b4d6c99
+pEqn.H            <- applications/solvers/incompressible/pimpleFoam/pEqn.H            d1c090f7d1c6d241598e914eeae61a44575134ab
+createFields.H    <- applications/solvers/incompressible/pimpleFoam/createFields.H    089cc0871a4431751c93cc424789c8ff215db24b
+Stokes.C          <- src/TurbulenceModels/turbulenceModels/laminar/Stokes/Stokes.C    dd9e6b0a0fbcc7636ddb7b2437be083139cb7bb1
+Stokes.H          <- src/TurbulenceModels/turbulenceModels/laminar/Stokes/Stokes.H    7c91668b5bf28add3e3c4a8a20691a1f37a89e53
+linearViscousStress.C <- src/TurbulenceModels/turbulenceModels/linearViscousStress/linearViscousStress.C  e6515388ca190fcd5b7e816a45322cdcb429602f
+linearViscousStress.H <- src/TurbulenceModels/turbulenceModels/linearViscousStress/linearViscousStress.H  3c81b7227e8c9afc7f56d4a546510a28f32f0cdd
+IncompressibleTurbulenceModel.C <- src/TurbulenceModels/incompressible/IncompressibleTurbulenceModel/IncompressibleTurbulenceModel.C  56c7381703fa549ee3be104142abd6efbbe14787
+IncompressibleTurbulenceModel.H <- src/TurbulenceModels/incompressible/IncompressibleTurbulenceModel/IncompressibleTurbulenceModel.H  9734d732b09b68b828cdc5eaad8a22e9bb6720db
+turbulentTransportModel.H <- src/TurbulenceModels/incompressible/turbulentTransportModels/turbulentTransportModel.H  169de37e680a673f1643cd4a08b51f378ec411bb
+
+Laminar viscous-term call chain (verified in the files above)
+------------------------------------------------------------
+UEqn.H:9   turbulence->divDevReff(U)
+  `turbulence` is autoPtr<incompressible::turbulenceModel> (createFields.H).
+  incompressible::turbulenceModel is a typedef for
+  IncompressibleTurbulenceModel<transportModel> (turbulentTransportModel.H:60).
+IncompressibleTurbulenceModel.C:112-118  divDevReff(U) { return divDevRhoReff(U); }
+  This is a virtual call. The runtime model is Stokes (log: "Selecting laminar
+  stress model Stokes"). The Stokes class is declared as
+    class Stokes : public linearViscousStress<laminarModel<BasicTurbulenceModel>>
+  (Stokes.H:59-61).
+  Stokes.C and laminarModel.{H,C} do NOT define divDevReff or divDevRhoReff.
+linearViscousStress.C:93-105  divDevRhoReff(volVectorField& U):
+    - fvc::div((this->alpha_*this->rho_*this->nuEff())*dev2(T(fvc::grad(U))))
+    - fvm::laplacian(this->alpha_*this->rho_*this->nuEff(), U)
+  For the incompressible model, alpha_ and rho_ are geometricOneField
+  (IncompressibleTurbulenceModel.H:69-70, .C constructor). In v2006
+  src/OpenFOAM/primitives/one/oneI.H, operator*(const one&, const Type&)
+  returns the other operand unchanged, so alpha_*rho_*nuEff() is nuEff().
+  Stokes::nuEff() returns a volScalarField named "nuEff" with value nu()
+  (Stokes.C:125-136).
+  linearViscousStress.C:108-121 (the rho,U overload) is not called by
+  pimpleFoam.
+  NOTE: the task brief named Stokes.C as the location of divDev*. That is
+  incorrect for v2006; Stokes.C is included only for completeness.
+
+Dataset case files (not OpenFOAM source)
+----------------------------------------
+fvSchemes_of_cylinder2D <- data/datasets_29_10_2021/datasets/of_cylinder2D_binary/system/fvSchemes
+  Byte-identical copy (sha256 2bed34abd4787ec71c57c98bee4d9bcb4066e684b934972706411bc3f0afb270).
+  The file header says v1912, but the case ran on v2006 (log.pimpleFoam).
+  Its non-default divSchemes key is div((nuEff*dev(T(grad(U))))) -- "dev", not
+  "dev2" -- and it maps to the same scheme as the default (Gauss linear).
+
+fvSolution PIMPLE settings (of_cylinder2D_binary/system/fvSolution):
+  momentumPredictor yes; transonic no; nOuterCorrectors 50; nCorrectors 1;
+  nNonOrthogonalCorrectors 0; consistent yes;
+  residualControl "(U|p)" { relTol 0; tolerance 1e-4; }
+  (the log shows convergence in about 5 outer iterations per step)
+  No ddtCorr entry, so the v2006 default applies: true
+    (pimpleControl.C:55, pimpleDict.getOrDefault("ddtCorr", true)).
+  No relaxationFactors dictionary. fvMatrix::relax() applies relaxation only
+    if the equation name or "default" is found (fvMatrix.C:708-720,
+    solution.C:247-253), so UEqn.relax() does nothing. p.relax() goes through
+    solution::relaxField, which was not checked line by line but is assumed
+    to be analogous.
+  Solvers: p GAMG/DICGaussSeidel tol 1e-6 relTol 0.01 (pFinal relTol 0);
+           U smoothSolver/symGaussSeidel tol 1e-5 relTol 0.1 (UFinal relTol 0).
+
+Other case facts relevant to which terms are active:
+  constant/turbulenceProperties: simulationType laminar
+  constant/transportProperties: Newtonian, nu 1.0e-3 (constant)
+  log.pimpleFoam: "No MRF models present", "No finite volume options present"
+  constant/ has no dynamicMeshDict, so the mesh is assumed static (the log does
+    not state this explicitly)
+  controlDict: deltaT 5e-4 (fixed), endTime 10, writeInterval 0.025
+  0.org/p: outlet fixedValue, so p.needReference() should be false

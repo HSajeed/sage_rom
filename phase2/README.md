@@ -25,15 +25,21 @@ extractor/
   llm_labeler.py           STUB -- narrow-scope LLM pass for calls the ontology can't resolve
 
 validation/
-  ground_truth_icofoam.yaml   DRAFT answer key -- NOT YET REVIEWED, see below
-  gate1_check.py                 precision/recall of the extractor against ground truth
+  ground_truth_icofoam.yaml            REVIEWED 2026-08-27 -- all 10 entries reviewed:true
+  ground_truth_pimpleFoam_v2006.yaml   DRAFT answer key, 51 entries, NOT YET REVIEWED
+  gate1_check.py                       precision/recall of the extractor against ground truth
+  check_pimplefoam_graph.py            checks pimpleFoam v2006 UEqn assembly (dispatch expansion, sign/side)
 
 rom/
   composable_operator_rom.py   shared ROM class; Arm 2 (hand-specified) and
-                                 Arm 3 (solver-derived) builders
+                                 Arm 3 (solver-derived) builders. Retained but not
+                                 the current Phase 2 test vehicle -- see "Next steps" below.
 
 fixtures/
   icoFoam.C, fvSchemes           real OpenFOAM-dev source + case config
+  pimpleFoam_v2006/              real OpenFOAM.com v2006 pimpleFoam source + the
+                                   dataset's own fvSchemes/turbulenceProperties --
+                                   see "pimpleFoam v2006" section below
 ```
 
 ## Running it
@@ -70,28 +76,37 @@ python -m rom.composable_operator_rom
 - `ComposableOperatorROM` -- both arms build, run, and receive gradients
   through every block
 
+`ground_truth_icofoam.yaml` was **reviewed 2026-08-27** (all 10 entries
+`reviewed: true`); Gate 1 runs against it without unreviewed-entry warnings.
+The already-visible Arm 2 vs. Arm 3 gap on icoFoam is **3 blocks vs. 7**, with
+Arm 3 picking up PISO-specific bookkeeping terms like `flux_reconstruction`
+and `interpolation` -- still a structural observation, not an accuracy
+result (see "Next steps" for why this isn't yet the test vehicle).
+
 **Explicitly NOT real yet -- do not mistake these for results:**
-- `ground_truth_icofoam.yaml` is a draft **I (Claude) wrote while scaffolding
-  this**, not independent ground truth. Every entry says `reviewed: false`
-  and `gate1_check.py` warns loudly about this every run. A Gate 1 "pass"
+- `ground_truth_pimpleFoam_v2006.yaml` (the pimpleFoam v2006 ground truth,
+  see below) is still a draft I (Claude) wrote while scaffolding this, not
+  independent ground truth. Every entry says `reviewed: false` and
+  `gate1_check.py` warns loudly about this every run. A Gate 1 "pass"
   right now proves the harness works, not that the labels are correct --
   review each entry against your own OpenFOAM knowledge before it counts.
-- The `fvi::` entries are flagged low-confidence in `ontology.py` for the
-  same reason -- worth checking OpenFOAM-dev's own docs/changelog for what
+- The `fvi::` entries (icoFoam fixture only) are flagged low-confidence in
+  `ontology.py` -- worth checking OpenFOAM-dev's own docs/changelog for what
   that namespace actually means before trusting "pressure_gradient" /
-  "convection" as their labels.
+  "convection" as their labels. On the pimpleFoam v2006 fixture, two more
+  ontology labels are pending review: the `fvc::div` of the expanded
+  `nuEff*dev2(T(grad(U)))` viscous term is currently labeled
+  `convection_explicit`, and the nested `fvc::grad(U)` inside it is labeled
+  `pressure_gradient_explicit` -- both look wrong for this term and need a
+  reviewer's correction.
 - `llm_labeler.py` is an interface + prompt template, not a live call --
   no API key configured in this environment. `stub_label()` raises
   `NotImplementedError` on purpose.
 - The ROM smoke test uses random synthetic data. It proves the
   architecture is wired correctly (forward pass, loss, gradients reach
   every block) and nothing more -- there is no CFD training data in this
-  scaffold yet.
-- The already-visible Arm 2 vs. Arm 3 gap (3 blocks vs. 6, with Arm 3
-  picking up PISO-specific bookkeeping terms like `flux_reconstruction`
-  and `interpolation`) is a structural observation, not an accuracy
-  result. Whether those extra blocks help or just add noise is exactly
-  what the real experiment needs to answer.
+  scaffold yet. It is also, by construction, not able to show a real
+  Arm 2 vs. Arm 3 gap -- see "Next steps" below.
 
 ## Synthetic-modification tests (step 2, done)
 
@@ -142,22 +157,98 @@ case) -- which is itself worth noting: a scaffold "passing" its first test
 doesn't mean it's correct, only that the first test wasn't hard enough to
 expose what was wrong.
 
-## Next steps, in order
+## pimpleFoam v2006 (the dataset's actual solver)
 
-1. **Review `ground_truth_icofoam.yaml` by hand.** Still the actual next
-   action -- nothing above changes that. Pay particular attention to the
-   two open ontology questions already flagged in the file (velocity- vs.
-   pressure-diffusion distinction; what `fvi::` actually means), plus a
-   third one raised by this session: should `fvm::Sp` get a more specific
-   physical_type than the generic `source_implicit`, or is "it's a source
-   term, and what kind requires more context" the honest, correct level of
-   claim for a syntax-only pass to make?
-2. ~~Design and inject the synthetic modification~~ -- done above, in two
-   difficulty tiers.
-3. **Generate real snapshot data** from the unmodified and modified
-   solver (Foam-Agent's case-execution tooling is worth reusing here
-   rather than rebuilding).
-4. **Train Arm 1 / Arm 2 / Arm 3** on the same snapshots, multiple seeds,
-   and check specifically whether Arm 3 beats Arm 2 -- that gap, not
-   either arm's absolute accuracy, is the answer to whether Phase 2's
-   core premise holds.
+The Phase 1 cylinder2D dataset was produced by **OpenFOAM.com v2006
+`pimpleFoam`, laminar** (confirmed from the dataset's own `log.pimpleFoam`
+header), not the OpenFOAM.org/dev `icoFoam` fork the original fixture
+above was pulled from -- a different fork with different namespaces
+(`fvi::` doesn't exist in v2006). `fixtures/pimpleFoam_v2006/` brings the
+parsed solver in line with the data it's meant to explain.
+
+**Provenance.** `fixtures/pimpleFoam_v2006/PROVENANCE.txt` documents the
+exact source: `gitlab.com/openfoam/core/openfoam`, tag `OpenFOAM-v2006`,
+commit `b45f8f6f587ce22dfe85aa87e97ed72b6afe44b5`. Every fixture file's
+`git hash-object` is checked there against the upstream blob id reported
+by the GitLab API at that commit, and a compare against
+`maintenance-v2006` confirms no patch-level change to any file used. The
+file also documents the case's `fvSchemes`/`fvSolution` settings and the
+laminar viscous-term call chain (see "dispatch.py" below).
+
+**Running it:**
+
+```
+python -m validation.check_pimplefoam_graph
+
+python -m validation.gate1_check \
+    --source fixtures/pimpleFoam_v2006/UEqn.H \
+    --ground-truth validation/ground_truth_pimpleFoam_v2006.yaml \
+    --include-unqualified
+```
+
+(`gate1_check.py` scores only the ground-truth entries whose
+`source_file` matches `--source`, since this is a multi-file fixture --
+run it once per file, e.g. swap in `pEqn.H` or `linearViscousStress.C`.
+`--include-unqualified` is needed because the ground truth includes
+member/free-function calls like `turbulence->divDevReff(U)`, which the
+extractor only captures when unqualified-call capture is turned on.)
+
+**`dispatch.py`.** `UEqn.H` calls `turbulence->divDevReff(U)`, a virtual
+call whose concrete implementation depends on the case's runtime-selected
+turbulence model, not on anything visible at the call site. `dispatch.py`
+is a small, hand-curated expansion table (not a general C++ call-graph
+resolver) that maps this call, given the case's
+`constant/turbulenceProperties`, to its actual body: for this case
+(`simulationType laminar`, no `laminar{}` subdict) it assumes the
+OpenFOAM-documented default laminar model, **Stokes** -- an assumption
+flagged in the code as not independently verified against the
+runtime-selection source, only against `Stokes.H`'s own description. Under
+that assumption, the call expands to the two `linearViscousStress::divDevRhoReff`
+terms (`fvm::laplacian(nuEff, U)` and `fvc::div(nuEff*dev2(T(fvc::grad(U))))`),
+with signs and equation side carried through from the outer call.
+
+**`physical_terms()`.** The operator graph (`operator_graph.py`) marks
+sub-expression calls that are nested inside another term's arguments (e.g.
+the `fvc::grad(U)` inside the expanded `dev2(T(grad(U)))` term) as
+`nested_in`; `physical_terms()` is the helper that walks the graph and
+excludes anything so marked, so nested calls aren't double-counted as
+separate equation terms alongside the term they're part of.
+
+**Ground truth status.** `validation/ground_truth_pimpleFoam_v2006.yaml`
+is a **draft**: 51 entries, all `reviewed: false`. It still needs human
+review before any Gate 1 result against it counts (see "Explicitly NOT
+real yet" above for the two pending ontology mislabels found while
+scaffolding it).
+
+## Next steps
+
+The remaining work is tracked in `PATH_FORWARD.md` at the repo root (a
+local, gitignored file -- not in git, so it isn't linked here as a
+reference, but is the authoritative running plan). In order:
+
+1. **Human review of `ground_truth_pimpleFoam_v2006.yaml`** (51 entries),
+   plus the two ontology mislabels flagged above on the expanded viscous
+   term, and the still-open icoFoam ontology questions (velocity- vs.
+   pressure-diffusion distinction; what `fvi::` actually means; whether
+   `fvm::Sp` deserves a more specific `physical_type`).
+2. **Step 4a -- static control.** Phase 2 is being redesigned as a
+   *static*, closed-form test: least-squares fits on POD coefficients
+   (term-family selection, then term-wise projected operators), not
+   gradient-trained blocks. Step 4a runs this on the existing,
+   *unmodified*-solver dataset as a control -- expected to be a null
+   result by construction, since for this laminar/no-MRF/no-fvOptions case
+   parsing adds no continuum term beyond textbook Navier-Stokes (the
+   `dev2` term is ≈0 for divergence-free flow; the rest is numerical, not
+   physical).
+3. **Step 4b -- treatment**, requiring a local OpenFOAM install and a
+   modified-solver run with a genuinely out-of-span term (e.g. a
+   non-polynomial drag term -- `fvm::Sp` alone is linear and already
+   representable by the textbook arm, so it can't show a gain), then the
+   same static test (B) on that data.
+
+**Note on `ComposableOperatorROM`:** the trained ROM (`rom/`) is retained
+in the codebase but is **not** the current Phase 2 test vehicle. Its
+Arm 2/Arm 3 extra blocks are bias-free `nn.Linear` maps, so they share the
+same function-class span -- a sum of linear blocks is one linear map --
+and a trained comparison between the arms cannot show a real gap by
+construction. The static design above replaces it for now.
