@@ -85,9 +85,12 @@ fvSolution PIMPLE settings (of_cylinder2D_binary/system/fvSolution):
     (pimpleControl.C:55, pimpleDict.getOrDefault("ddtCorr", true)).
   No relaxationFactors dictionary. fvMatrix::relax() applies relaxation only
     if the equation name or "default" is found (fvMatrix.C:708-720,
-    solution.C:247-253), so UEqn.relax() does nothing. p.relax() goes through
-    solution::relaxField, which was not checked line by line but is assumed
-    to be analogous.
+    solution.C:247-253), so UEqn.relax() does nothing. p.relax() is also a
+    no-op: GeometricField::relax() acts only if mesh.relaxField(name)
+    (upstream/GeometricField.C:982-1002), relaxField returns
+    fieldRelaxDict_.found(name) || found("default") (upstream/solution.C:237-244),
+    and both dicts are filled only from a relaxationFactors block
+    (upstream/solution.C:56-104). Verified 2026-09-17.
   Solvers: p GAMG/DICGaussSeidel tol 1e-6 relTol 0.01 (pFinal relTol 0);
            U smoothSolver/symGaussSeidel tol 1e-5 relTol 0.1 (UFinal relTol 0).
 
@@ -127,3 +130,16 @@ upstream/fvcDiv.C                <- src/finiteVolume/finiteVolume/fvc/fvcDiv.C  
 upstream/fvcFlux.C               <- src/finiteVolume/finiteVolume/fvc/fvcFlux.C  9246105aa4c93477fa508cbf3177067f8be80d3f
 upstream/fvcMeshPhi.C            <- src/finiteVolume/finiteVolume/fvc/fvcMeshPhi.C  42becab798ab12db3637d704470656a79281f794
 upstream/fvMatrix.C              <- src/finiteVolume/fvMatrices/fvMatrix/fvMatrix.C  5bf8b7bef562a3c4017b46fd22d9a14480720910
+upstream/solution.C              <- src/OpenFOAM/matrices/solution/solution.C  b38406b32d40dc9efee511414034764c7cebee5e
+upstream/GeometricField.C        <- src/OpenFOAM/fields/GeometricFields/GeometricField/GeometricField.C  43c3f1536c2ec143aa3b4de792a32e33719b6c1a
+upstream/pimpleControl.C         <- src/finiteVolume/cfdTools/general/solutionControl/pimpleControl/pimpleControl.C  aa4d3d6bcbbffde7e378dec00b8b0f7622602e1d
+
+Upstream bracket for the pEqn.H:11 else-branch (other tags, NOT v2006)
+----------------------------------------------------------------------
+Added 2026-09-17 (owner review of the dead else-branch). Same repository and
+download method, pinned to the named tag instead of the v2006 commit. Blob ids
+verified with `git hash-object` against .../repository/files/<path>?ref=<tag>.
+upstream/pEqn.H.v2106 <- applications/solvers/incompressible/pimpleFoam/pEqn.H @ OpenFOAM-v2106  d1c090f7d1c6d241598e914eeae61a44575134ab
+  (same blob as the v2006 pEqn.H fixture; the else-branch is still present)
+upstream/pEqn.H.v2112 <- applications/solvers/incompressible/pimpleFoam/pEqn.H @ OpenFOAM-v2112  cca90fdc9ac36d1373627284680d714600c661a6
+  (the else-branch `phiHbyA += MRF.zeroFilter(fvc::interpolate(rAU))` is removed, with no replacement)

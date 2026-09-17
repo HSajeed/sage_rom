@@ -1,6 +1,6 @@
 # Labeling notes: pimpleFoam v2006 ground truth
 
-Labels proposed on 2026-09-17 for `ground_truth_pimpleFoam_v2006.yaml`. All 51 entries still have `reviewed: false`.
+Labels proposed on 2026-09-17 for `ground_truth_pimpleFoam_v2006.yaml`. **Reviewed by the owner on 2026-09-17: all 51 entries have `reviewed: true`.** See "Owner review outcome" at the end.
 
 **Reference.** OpenFOAM (ESI/openfoam.com) Programmer's Guide v2512 (`Openfoam_doc.pdf`). Printed page P-n is PDF index n-1.
 
@@ -191,12 +191,12 @@ The reference system is incompressible NS: ∂U/∂t + ∇·(UU) = −∇p + ∇
 ## Owner decisions (2026-09-17) and remaining questions
 
 1. **Decided (Rule 1): operand-aware.** `snGrad(p)` → `pressure_gradient_face_normal`.
-   - **Open:** the `fvm::laplacian(rAtU(), p)` → `diffusion` exception. Rule 1 would suggest an operand-aware pressure-Laplacian label, but the reviewed icoFoam key fixes `diffusion`. Keep the exception, or relabel both keys?
+   - **Decided (owner review):** `fvm::laplacian(rAtU(), p)` keeps `diffusion`, with `physics_class: pressure_projection` (not physical diffusion). The icoFoam `laplacian(rAU, p)` entry gets the same `physics_class`.
 2. **Decided (Rule 2).** `nuEff`, `dev2` and `T` → `operator_argument`.
-   - **Open:** confirm that the nested `fvc::grad(U)` calls (LVS.C:87/102/118) stay `scope: operator` with `term_kind: argument`.
+   - **Decided (owner review):** the nested `fvc::grad(U)` calls (LVS.C:87/102/118) stay `scope: operator` with `term_kind: argument`.
 3. **Decided (Rule 3).** Expanded. UEqn.H:9 and ITM.C:117 are `forwarding`. LVS.C:102 `fvc::div` and LVS.C:103 `fvm::laplacian` are `term`.
 4. **Decided (Rule 4).** `user_source`, `implicit_or_explicit`.
-   - **Open:** should `function` be `fvOptions` or `operator()`?
+   - **Decided (owner review):** `function: fvOptions`, `receiver: null`.
 5. **Decided, done.** The icoFoam GT citation is fixed; labels are unchanged.
 6. **Decided, done.** The upstream v2006 sources are in `fixtures/pimpleFoam_v2006/upstream/`, with blob ids in PROVENANCE.txt.
 
@@ -205,4 +205,14 @@ The reference system is incompressible NS: ∂U/∂t + ∇·(UU) = −∇p + ∇
 - **`constrainPressure` is a no-op in this case.** `fixtures/pimpleFoam_v2006/upstream/constrainPressure.C:36-79` only calls `updateSnGrad` on `fixedFluxPressure` p patches. The overload used at pEqn.H:39 (96-107) forwards there. The case's `0.org/p` patches are zeroGradient (inlet, cylinder, top, bottom), fixedValue (outlet) and empty (front, back). The YAML `active_in_case` is updated.
 - **The `experimentalDdtCorr` switch does not affect this case.** The switch defaults to 0 (`fixtures/pimpleFoam_v2006/upstream/ddtSchemeBase.C:34-37`, an OptimisationSwitch; `ddtScheme.H:74-76` says "Default is off"). The case controlDict does not set it. It also does not matter here: the incompressible Euler path `EulerDdtScheme.C:546` calls the 3-argument `fvcDdtPhiCoeff(U, phi, phiCorr)` (`ddtScheme.C:143-213`) directly, and that overload never reads the switch. Only the other overloads do (`ddtScheme.C:306, 330, 361`). So c_f = 1 − min(|φᵒ−S_f·U_fᵒ|/|φᵒ|, 1), and 0 on fixed-value U patches.
 - **`fvc::makeRelative`, `fvc::makeAbsolute` and `fvc::correctUf` are confirmed no-ops on a static mesh.** makeRelative (`fixtures/pimpleFoam_v2006/upstream/fvcMeshPhi.C:76-86`) and makeAbsolute (`:115-125`) act only if `mesh.moving()`. correctUf (`:224-239`) acts only if `mesh.dynamic()`.
-- **Still open:** `p.relax()` / `solution::relaxField`, which was not fetched. Also, whether the dead else-branch at pEqn.H:11 is an upstream bug.
+- **`p.relax()` and `UEqn.relax()` are verified no-ops.** `GeometricField::relax()` acts only if `mesh.relaxField(name)` (`upstream/GeometricField.C:982-1002`; name becomes `pFinal` on the final iteration). `relaxField` returns `fieldRelaxDict_.found(name) || found("default")` (`upstream/solution.C:237-244`), and the dicts are filled only from a `relaxationFactors` block (`upstream/solution.C:56-104`), which the case lacks. `fvMatrix::relax()` is the same via `relaxEquation` (`solution.C:247-253`). YAML: `active_in_case: "no-op (verified)"`.
+- **The pEqn.H:11 else-branch is a confirmed upstream bug, and dead in this case.** It adds `interpolate(rAU)` [s] to `phiHbyA` [m³/s] with no `ddtCorr` factor. `ddtCorr` defaults to true (`upstream/pimpleControl.C:55`) and the case does not set it. The branch is still in v2106 (`upstream/pEqn.H.v2106`, same blob as v2006) and removed with no replacement in v2112 (`upstream/pEqn.H.v2112`). Both pEqn.H:11 entries carry `upstream_status` and `active_in_case: no (dead branch)`. The parser does not evaluate runtime switches, so a case-activity filter is needed before option B.
+
+## Owner review outcome (2026-09-17)
+
+- All 51 entries `reviewed: true`.
+- New field `physics_class` on every operator-scope `term`/`forwarding` entry (21):
+  - `continuum_physics` (11): fvm::ddt(U), fvm::div(phi,U), MRF.DDt(U), fvOptions(U), fvm::laplacian(nuEff,U) and the fvc::div dev2 term (both overloads, LVS.C:102/103 and :118/119), fvc::grad(p) at UEqn.H:21, and the divDevReff/divDevRhoReff forwarding nodes.
+  - `pressure_projection` (6): fvm::laplacian(rAtU(),p), fvc::div(phiHbyA), fvc::grad(p) at pEqn.H:30 and :64, fvc::snGrad(p), fvc::flux(HbyA).
+  - `numerical_correction` (4): fvc::ddtCorr and the fvc::interpolate(rAU) calls (pEqn.H:7, :11, :29).
+- New field `upstream_status` on the two pEqn.H:11 entries.

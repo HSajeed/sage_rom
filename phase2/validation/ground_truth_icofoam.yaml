@@ -87,6 +87,7 @@ entries:
     namespace: fvm
     function: laplacian
     physical_type: diffusion
+    physics_class: pressure_projection   # owner review 2026-09-17: pressure Poisson operator, not physical diffusion
     arguments: [rAU, p]
     reviewed: true
     note: >
