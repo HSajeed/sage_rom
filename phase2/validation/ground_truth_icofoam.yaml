@@ -1,11 +1,16 @@
 # GATE 1 GROUND TRUTH -- STATUS: REVIEWED 2026-08-27
 #
-# Reviewed against fixtures/icoFoam.C (OpenFOAM-dev, pulled 2026-08-24)
-# and OpenFOAM Programmer's Guide v2512. All 10 entries confirmed.
+# Reviewed against fixtures/icoFoam.C (OpenFOAM-dev, pulled 2026-08-24).
+# fvm::/fvc:: entries checked against OpenFOAM Programmer's Guide v2512.
+# fvi:: entries confirmed against OpenFOAM-dev source only
+# (src/finiteVolume/finiteVolume/fvi/: fviGrad.H, fviDiv.H); Programmer's
+# Guide v2512 does not cover the fvi:: namespace. All 10 entries confirmed.
 #
 # Key decisions during review:
-#   - fvi:: entries confirmed via upstream OpenFOAM-dev source (fviGrad.H,
-#     fviDiv.H/.C). discretization_role updated to "explicit_internal".
+#   - fvi:: entries confirmed via upstream OpenFOAM-dev source
+#     (src/finiteVolume/finiteVolume/fvi/: fviGrad.H, fviDiv.H/.C); not
+#     covered by Programmer's Guide v2512. discretization_role updated to
+#     "explicit_internal".
 #   - fvi::div labeled "flux_divergence" (not "convection") since it
 #     appears in the pressure equation acting on a face-flux field.
 #   - fvm::laplacian is the SAME operator in both cases (page 40, eq 3.14:
@@ -53,7 +58,8 @@ entries:
       Reviewed and confirmed. fvi::grad returns volInternalField
       (internal-cell-only, no boundary treatment), unlike fvc:: which
       returns a full volField. Confirmed against OpenFOAM-dev source
-      (fviGrad.H) and Programmer's Guide v2512. discretization_role
+      (src/finiteVolume/finiteVolume/fvi/fviGrad.H); Programmer's Guide
+      v2512 does not cover fvi::. discretization_role
       updated to "explicit_internal".
 
   - line: 95
@@ -102,8 +108,9 @@ entries:
       (internal-cell-only). Labeled "flux_divergence" rather than
       "convection" since it appears in the pressure equation acting on a
       face-flux field (phiHbyA), not on a momentum-convection term.
-      Confirmed against OpenFOAM-dev source (fviDiv.H) and Programmer's
-      Guide v2512.
+      Confirmed against OpenFOAM-dev source
+      (src/finiteVolume/finiteVolume/fvi/fviDiv.H); Programmer's Guide v2512
+      does not cover fvi::.
 
   - line: 126
     namespace: fvi

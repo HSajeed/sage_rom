@@ -99,3 +99,31 @@ Other case facts relevant to which terms are active:
     not state this explicitly)
   controlDict: deltaT 5e-4 (fixed), endTime 10, writeInterval 0.025
   0.org/p: outlet fixedValue, so p.needReference() should be false
+
+Upstream supporting sources (upstream/)
+---------------------------------------
+Added 2026-09-17 to back the doc_reference citations in
+validation/ground_truth_pimpleFoam_v2006.yaml and
+validation/labeling_notes_pimpleFoam_v2006.md. Same repository and commit as
+above (tag OpenFOAM-v2006, b45f8f6f587ce22dfe85aa87e97ed72b6afe44b5), same
+GitLab REST API raw-file download pinned to the commit. Files are verbatim.
+Verification: for every file, `git hash-object upstream/<file>` equals the
+blob_id returned by .../repository/files/<path>?ref=<sha> (all MATCH).
+These are labeling evidence only; the extractor does not parse them.
+
+Files (local name <- upstream path @ tag; git blob id)
+upstream/TensorI.H               <- src/OpenFOAM/primitives/Tensor/TensorI.H  c73d558c5f86680521af72543e459df959f67fe5
+upstream/MRFZone.C               <- src/finiteVolume/cfdTools/general/MRF/MRFZone.C  a6d3653599bc8f13ebdb7b2daf4e63749f3d0dde
+upstream/MRFZoneList.C           <- src/finiteVolume/cfdTools/general/MRF/MRFZoneList.C  28b8558e349de48d4de4e486a67f30b29b727134
+upstream/constrainHbyA.C         <- src/finiteVolume/cfdTools/general/constrainHbyA/constrainHbyA.C  61c1f89de58020f55c38f10f80360bd064d5639c
+upstream/constrainPressure.C     <- src/finiteVolume/cfdTools/general/constrainPressure/constrainPressure.C  a4410c7ea196dcedcd3dacbb7af13d6ee30db58d
+upstream/fvOptionListTemplates.C <- src/finiteVolume/cfdTools/general/fvOptions/fvOptionListTemplates.C  6ea274ab402ec1267d556baf5670d804d0adba41
+upstream/EulerDdtScheme.C        <- src/finiteVolume/finiteVolume/ddtSchemes/EulerDdtScheme/EulerDdtScheme.C  7dcf8207812d3801c015634ed02a67daa6dd8ae6
+upstream/ddtScheme.C             <- src/finiteVolume/finiteVolume/ddtSchemes/ddtScheme/ddtScheme.C  6ce56fc73c4c09d7f3fd29cbc89f9b6430d43b50
+upstream/ddtScheme.H             <- src/finiteVolume/finiteVolume/ddtSchemes/ddtScheme/ddtScheme.H  d8a1bbd821423b708ba572cb56071412316fb644
+upstream/ddtSchemeBase.C         <- src/finiteVolume/finiteVolume/ddtSchemes/ddtScheme/ddtSchemeBase.C  d4b9237de2067b09bed4d4da320ceeb101647f85
+upstream/fvcDdt.C                <- src/finiteVolume/finiteVolume/fvc/fvcDdt.C  2b1c28390b2c2f288b88eb6053fc43df12125631
+upstream/fvcDiv.C                <- src/finiteVolume/finiteVolume/fvc/fvcDiv.C  1424f643f5c0ab0c79c2d14dc18b347e8a199980
+upstream/fvcFlux.C               <- src/finiteVolume/finiteVolume/fvc/fvcFlux.C  9246105aa4c93477fa508cbf3177067f8be80d3f
+upstream/fvcMeshPhi.C            <- src/finiteVolume/finiteVolume/fvc/fvcMeshPhi.C  42becab798ab12db3637d704470656a79281f794
+upstream/fvMatrix.C              <- src/finiteVolume/fvMatrices/fvMatrix/fvMatrix.C  5bf8b7bef562a3c4017b46fd22d9a14480720910

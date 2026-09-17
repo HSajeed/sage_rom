@@ -1,0 +1,1086 @@
+# GATE 1 GROUND TRUTH -- STATUS: DRAFT, NOT REVIEWED
+#
+# LABELS PROPOSED 2026-09-17 against the OpenFOAM (ESI/openfoam.com)
+# Programmer's Guide v2512 (Openfoam_doc.pdf, 59 pp.; printed page P-n is PDF
+# page index n-1). VERSION NOTE: the guide is v2512 but the solver source and
+# the dataset are v2006. Version-sensitive items are marked
+# "VERSION-SENSITIVE" in the notes (fvc::div of a volField uses a run-time
+# divScheme in v2006, not the fixed central differencing the guide describes;
+# fvc::interpolate is not the guide's faceInterpolate(); ddtCorr coefficient
+# details; the three-argument ddtCorr(U, phi, Uf) overload). Where the guide
+# is silent, labels come from the v2006 source and doc_reference says so.
+# Rationale per entry, the textbook-NS mapping and the implied ontology
+# changes are in validation/labeling_notes_pimpleFoam_v2006.md.
+#
+# LABELING POLICY (owner decision, 2026-09-17; policy version below)
+#   Rule 1 (verbatim): physical_type = operator + operand (what the term IS in
+#   context, per guide §3.4.2 vs §3.4.5).
+#     fvc::grad(p) -> pressure_gradient; fvc::grad(U) -> velocity_gradient;
+#     generic other -> gradient; fvc::div(phiHbyA) (face flux) ->
+#     flux_divergence; fvc::div(phi,U)-style two-arg -> convection;
+#     fvc::div(nuEff*dev2(T(grad U))) -> viscous_stress_divergence_explicit;
+#     fvc::snGrad(p) -> pressure_gradient_face_normal (otherwise
+#     surface_normal_gradient). Explicit/implicit lives in
+#     discretization_role, never in physical_type.
+#     Known exception, kept for consistency with the REVIEWED icoFoam key:
+#     fvm::laplacian is labelled `diffusion` for every operand (including
+#     laplacian(rAtU(), p)); see the notes file.
+#   Rule 2: nuEff, dev2, T -> scope: operator_argument. They stay in the key
+#     for Gate 1 call-identity matching but are never ROM terms. Roles stay
+#     coefficient / algebraic.
+#   Rule 3: divDevReff stays expanded. UEqn.H:9 divDevReff and
+#     IncompressibleTurbulenceModel.C:117 divDevRhoReff are
+#     term_kind: forwarding; the linearViscousStress.C fvm::laplacian(nuEff, U)
+#     and fvc::div(... dev2 ...) are the real terms (term_kind: term).
+#     Every operator-scope entry has term_kind term | forwarding;
+#     operator_argument entries have term_kind: argument.
+#     Labeler's application (flagged for owner confirmation): an fvc:: call
+#     nested inside another operator's argument (fvc::grad(U) in
+#     linearViscousStress.C:87/102/118) keeps scope: operator but gets
+#     term_kind: argument, matching the graph's nested_in handling.
+#   Rule 4: fvOptions(U) -> user_source, role implicit_or_explicit (the
+#     function-name convention "fvOptions" vs "operator()" is still open).
+#
+# Every entry has `reviewed: false`. Only a human reviewer may change that.
+#
+# Source: OpenFOAM.com v2006 pimpleFoam, laminar (Stokes) viscous path.
+# This is the solver that produced of_cylinder2D_binary; see
+# fixtures/pimpleFoam_v2006/PROVENANCE.txt for the commit, blob ids and the
+# verified call chain.
+#
+# This is a MULTI-FILE fixture, so each entry has its own `source_file`.
+# gate1_check scores only the entries whose source_file matches --source,
+# and must be run once per file:
+#   python -m validation.gate1_check --source fixtures/pimpleFoam_v2006/UEqn.H \
+#       --ground-truth validation/ground_truth_pimpleFoam_v2006.yaml --include-unqualified
+#   (repeat for pEqn.H, linearViscousStress.C, IncompressibleTurbulenceModel.C)
+#
+# Scope:
+#   * every fvm:: / fvc:: call in UEqn.H, pEqn.H and linearViscousStress.C;
+#   * unqualified calls that add a term, operator or constraint to the
+#     discretised equations (member calls such as turbulence->divDevReff(U),
+#     MRF.DDt(U), UEqn.H(); free functions such as solve, constrainHbyA,
+#     dev2, T; the functor fvOptions(U)). These have `namespace: ""`.
+#   * Pure control queries (pimple.ddtCorr(), p.needReference(),
+#     pimple.nCorrPISO(), mesh.solver(), p.select()) are left out, and so are
+#     bookkeeping calls (tUEqn.clear(), tUEqn.ref()) and geometry accessors
+#     (mesh.magSf()). The reviewer should decide whether any of them belong.
+#   * Stokes.C has no fvm::/fvc:: calls and no divDev* member (see PROVENANCE),
+#     so it has no entries. pimpleFoam.C's only fvc:: call is
+#     fvc::makeRelative(phi, U) at line 145, inside the moving-mesh branch;
+#     it is also left out. The reviewer may add it.
+#   * linearViscousStress.C also yields non-DSL qualified calls
+#     (BasicTurbulenceModel::read/correct, IOobject::groupName). They are not
+#     operators and have no entries, so gate1 reports them as EXTRA.
+#
+# Extra fields (ignored by gate1_check, kept for the reviewer):
+#   scope:      operator    -- a term/operator of the discretised equations:
+#                              fvm::/fvc:: differential/interpolation calls,
+#                              the divDevReff dispatch and its expansion,
+#                              fvOptions(U), MRF.DDt(U)
+#               bookkeeping -- matrix accessors/manipulation, solves,
+#                              relaxation, boundary/reference constraints,
+#                              MRF/mesh-motion flux frame changes
+#               (bookkeeping does NOT mean "drop from the graph": A()/H()
+#               carry data flow from UEqn to pEqn -- see notes file)
+#               operator_argument -- coefficient / pointwise tensor algebra
+#                              inside an operator's argument (nuEff, dev2, T):
+#                              Gate 1 identity only, never a ROM term
+#   term_kind:  term | forwarding (operator scope); argument
+#               (operator_argument scope). forwarding = dispatch node whose
+#               body is expanded elsewhere; must not be counted as a term.
+#               An operator-scope fvc:: call nested inside another operator's
+#               argument (fvc::grad(U) inside fvc::div(...) or inside
+#               dev(twoSymm(...))) is also term_kind: argument; nesting inside
+#               a bookkeeping wrapper (solve, zeroFilter, constrainHbyA) does
+#               not demote a term.
+#   discretization_role (operator/operator_argument entries): implicit | explicit |
+#               implicit+explicit | implicit_or_explicit | algebraic |
+#               coefficient
+#   doc_reference: Programmer's Guide v2512 section, printed page,
+#               equation/table; or "not covered ...; source: <file:line>".
+#               Upstream library sources are checked in verbatim under
+#               fixtures/pimpleFoam_v2006/upstream/ (tag OpenFOAM-v2006,
+#               commit b45f8f6f; blob ids in PROVENANCE.txt).
+#   math:       the operator's meaning, in the guide's notation where the
+#               guide gives it (ν=nuEff, ρ≡1, kinematic p)
+#   confidence: high | medium | low
+#   call_form:  qualified | member_dot | member_arrow | this_member |
+#               free_function | functor
+#   active_in_case: whether the term is non-zero or has an effect in
+#               of_cylinder2D_binary (laminar, constant nu, no MRF, no
+#               fvOptions, static mesh, consistent yes, ddtCorr default true)
+#   in_momentum_path: (linearViscousStress.C only) whether pimpleFoam's
+#               momentum equation actually reaches this call
+#
+# Proposed physical_type labels NOT in extractor/ontology.py are marked
+# "PROPOSED LABEL" in their note.
+
+physical_type_policy_version: "2026-09-17"   # see LABELING POLICY above
+source_file: fixtures/pimpleFoam_v2006/   # multi-file; see per-entry source_file
+source_commit_note: >
+  gitlab.com/openfoam/core/openfoam, tag OpenFOAM-v2006
+  (commit b45f8f6f587ce22dfe85aa87e97ed72b6afe44b5), fetched 2026-09-17.
+  The fixture files are unchanged on maintenance-v2006.
+
+entries:
+  # ---------------------------------------------------------------- UEqn.H
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 3
+    namespace: ""
+    function: correctBoundaryVelocity
+    call_form: member_dot
+    receiver: MRF
+    scope: bookkeeping
+    physical_type: mrf_boundary_velocity_correction
+    arguments: [U]
+    active_in_case: "no (no MRF zones, so this does nothing)"
+    reviewed: false
+    note: PROPOSED LABEL. Sets U boundary values on rotating-zone patches; adds no term.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 7
+    namespace: fvm
+    function: ddt
+    scope: operator
+    term_kind: term
+    physical_type: time_derivative
+    discretization_role: implicit
+    doc_reference: "Programmer's Guide v2512 §3.4.3 p.41 eq 3.20-3.21 (Euler); Table 3.2 p.39"
+    math: "∂/∂t ∫_V U dV ≈ (U_P^n − U_P^o) V_P / Δt"
+    confidence: high
+    arguments: [U]
+    active_in_case: "yes (Euler)"
+    reviewed: false
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 7
+    namespace: fvm
+    function: div
+    scope: operator
+    term_kind: term
+    physical_type: convection
+    discretization_role: implicit
+    doc_reference: "Programmer's Guide v2512 §3.4.2 p.40 eq 3.16; Table 3.2 p.39 (Convection, div(psi, phi))"
+    math: "∫_V ∇·(φU) dV = Σ_f F_f U_f, F_f = S_f·U_f (face flux phi)"
+    confidence: high
+    arguments: [phi, U]
+    active_in_case: "yes (divSchemes default Gauss linear)"
+    reviewed: false
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 8
+    namespace: ""
+    function: DDt
+    call_form: member_dot
+    receiver: MRF
+    scope: operator
+    term_kind: term
+    physical_type: mrf_coriolis_source
+    discretization_role: explicit
+    doc_reference: >-
+      not covered in Programmer's Guide v2512 (MRF only named in the pisoFoam
+      header, §1.2.4 p.19 listing line 60); source:
+      fixtures/pimpleFoam_v2006/upstream/MRFZoneList.C:167-194 and
+      fixtures/pimpleFoam_v2006/upstream/MRFZone.C:311-333
+    math: "Σ_zones (Ω × U) in zone cells (Coriolis acceleration), returned as a volVectorField"
+    confidence: medium
+    arguments: [U]
+    active_in_case: "no (no MRF zones; this adds nothing to the matrix)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Verified against v2006 source: MRFZoneList::DDt(U)
+      returns a volVectorField "MRFZoneList:acceleration" to which each zone
+      adds Omega ^ U (MRFZone::addCoriolis). It is an explicit field added
+      to the fvMatrix (guide §3.4.9 p.43: an explicit source is a volField).
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 9
+    namespace: ""
+    function: divDevReff
+    call_form: member_arrow
+    receiver: turbulence
+    scope: operator
+    term_kind: forwarding
+    physical_type: viscous_stress_divergence
+    discretization_role: implicit+explicit
+    doc_reference: >-
+      Programmer's Guide v2512 §1.2.4 p.18 (pisoFoam.C header lines 46-48:
+      ∂U/∂t + ∇·(UU) − ∇·R = −∇p, R the stress tensor) and §1.1.3 p.12
+      (−∇·μ∇U ↔ −fvm::laplacian(mu, U)); dispatch itself not covered; source:
+      IncompressibleTurbulenceModel.C:117 -> linearViscousStress.C:102-103
+    math: >-
+      −∇·[ν_eff(∇U + (∇U)^T − (2/3)(∇·U)I)] = ∇·R_dev,
+      R_dev = −ν_eff dev(twoSymm(∇U)) (linearViscousStress.C:86-87);
+      split as −∇·(ν_eff∇U) [implicit] − ∇·[ν_eff dev2((∇U)^T)] [explicit]
+    confidence: medium
+    arguments: [U]
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. This is the ENTIRE viscous term of the momentum
+      equation. It expands, through IncompressibleTurbulenceModel::divDevReff
+      -> divDevRhoReff (virtual) -> linearViscousStress::divDevRhoReff, to
+        - fvc::div(nuEff*dev2(T(fvc::grad(U)))) - fvm::laplacian(nuEff, U)
+      with nuEff = nu for Stokes. The two parts sum to the divergence of the
+      deviatoric viscous stress: dev2(A) = A − (2/3)tr(A)I and the laplacian
+      supplies the ∇U part with no trace removed. Sign convention: the call
+      sits on the LHS with +, so it is MINUS the physical viscous force.
+      Owner decision 2026-09-17: stays expanded. This call site is a
+      forwarding node (term_kind: forwarding); the real terms are
+      linearViscousStress.C:102 fvc::div and :103 fvm::laplacian.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 11
+    namespace: ""
+    function: fvOptions
+    call_form: functor
+    receiver: fvOptions
+    scope: operator
+    term_kind: term
+    physical_type: user_source
+    discretization_role: implicit_or_explicit
+    doc_reference: >-
+      source terms in general: Programmer's Guide v2512 §3.4.9 p.43 eq 3.29;
+      fvOptions itself not covered (only named in pisoFoam header §1.2.4 p.19
+      listing line 60, "finite volume options, e.g. explicit porosity");
+      source: fixtures/pimpleFoam_v2006/upstream/fvOptionListTemplates.C:76-151
+    math: "Σ_options addSup(fvMatrix) -- any mix of implicit (Sp-like) and explicit (Su) contributions"
+    confidence: medium
+    arguments: [U]
+    active_in_case: "no (log: 'No finite volume options present')"
+    reviewed: false
+    note: >
+      PROPOSED LABEL (replaces draft source_explicit_user). v2006
+      fv::optionList::operator()(U) returns a tmp<fvMatrix> built from each
+      active option's addSup(...), so it is not necessarily explicit. It is on
+      the RHS of ==. The function name is ambiguous: tree-sitter sees an
+      identifier `fvOptions` called like a function. Whether `function` should
+      be "fvOptions" or "operator()" is a convention the reviewer must fix.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 15
+    namespace: ""
+    function: relax
+    call_form: member_dot
+    receiver: UEqn
+    scope: bookkeeping
+    physical_type: implicit_under_relaxation
+    arguments: []
+    active_in_case: "no (no relaxationFactors in fvSolution; fvMatrix::relax() does nothing)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Guide mentions under-relaxation only in passing
+      (§3.3.2 p.35 "Previous iteration values"). Would modify A() if active.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 17
+    namespace: ""
+    function: constrain
+    call_form: member_dot
+    receiver: fvOptions
+    scope: bookkeeping
+    physical_type: matrix_constraint_user
+    arguments: [UEqn]
+    active_in_case: "no (no fvOptions)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 21
+    namespace: fvc
+    function: grad
+    scope: operator
+    term_kind: term
+    physical_type: pressure_gradient
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §1.1.3 p.12 (−∇p ↔ −fvc::grad(p)); §3.4.6 p.42 eq 3.25; Table 3.2 p.39"
+    math: "∫_V ∇p dV = Σ_f S_f p_f (Gauss linear)"
+    confidence: high
+    arguments: [p]
+    active_in_case: "yes (momentumPredictor yes; gradSchemes default Gauss linear)"
+    reviewed: false
+    note: >
+      Label changed from draft pressure_gradient_explicit to
+      pressure_gradient + discretization_role explicit, to match the reviewed
+      icoFoam label (explicitness belongs in the role field). Argument-aware:
+      fvc::grad(U) in linearViscousStress.C is velocity_gradient. This call
+      is on the RHS, with a minus sign, inside solve(UEqn == -fvc::grad(p));
+      the pressure gradient is NOT part of UEqn itself, so UEqn.H() excludes it.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 21
+    namespace: ""
+    function: solve
+    call_form: free_function
+    scope: bookkeeping
+    physical_type: linear_solve
+    arguments: [UEqn == -fvc::grad(p)]
+    active_in_case: "yes (momentumPredictor yes)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Not a physics operator (guide §3.4 p.35 eq 3.12: solves
+      [A][x]=[b]). Kept because it is where the pressure gradient is joined
+      to UEqn for the predictor.
+
+  - source_file: fixtures/pimpleFoam_v2006/UEqn.H
+    line: 23
+    namespace: ""
+    function: correct
+    call_form: member_dot
+    receiver: fvOptions
+    scope: bookkeeping
+    physical_type: field_constraint_user
+    arguments: [U]
+    active_in_case: "no (no fvOptions)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  # ---------------------------------------------------------------- pEqn.H
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 1
+    namespace: ""
+    function: A
+    call_form: member_dot
+    receiver: UEqn
+    scope: bookkeeping
+    physical_type: matrix_diagonal
+    arguments: []
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. rAU = 1/A, A = diag(UEqn)/V
+      (fixtures/pimpleFoam_v2006/upstream/fvMatrix.C:771-795). Scope bookkeeping: it adds no new term, it reads the diagonal
+      of operators already labelled (ddt, convection, laplacian). It is still
+      the central coupling of the pressure equation; keep its data-flow edge.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 2
+    namespace: ""
+    function: constrainHbyA
+    call_form: free_function
+    scope: bookkeeping
+    physical_type: boundary_constraint
+    arguments: ["rAU*UEqn.H()", U, p]
+    active_in_case: "yes, at boundaries only (fixes HbyA on non-assignable U patches, e.g. inlet fixedValue and noSlip)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Verified against
+      fixtures/pimpleFoam_v2006/upstream/constrainHbyA.C:34-72:
+      on every U patch that is not assignable (and whose p patch is not
+      fixedFluxExtrapolatedPressure) HbyA's boundary value is set to U's.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 2
+    namespace: ""
+    function: H
+    call_form: member_dot
+    receiver: UEqn
+    scope: bookkeeping
+    physical_type: matrix_offdiagonal_source
+    arguments: []
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Verified against
+      fixtures/pimpleFoam_v2006/upstream/fvMatrix.C:800-858 (line 834):
+      H = (−Σ_N a_N U_N + source + boundary source)/V. Because source_
+      holds every explicit contribution of UEqn, H() carries the explicit
+      viscous term fvc::div(nuEff*dev2(T(grad U))) (and fvOptions/MRF
+      explicit parts when present) into the pressure equation; tUEqn is
+      cleared only after the H/A/H1 calls. Scope bookkeeping for the same
+      reason as A() (no new operator), but its data-flow edges matter.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 3
+    namespace: fvc
+    function: flux
+    scope: operator
+    term_kind: term
+    physical_type: flux_reconstruction
+    discretization_role: explicit
+    doc_reference: >-
+      partially covered: the face flux F = S_f·(U)_f is defined in Programmer's
+      Guide v2512 §3.4.2 p.40 eq 3.16, but fvc::flux is not in Table 3.2 p.39;
+      source: fixtures/pimpleFoam_v2006/upstream/fvcFlux.C:33-43
+    math: "phiHbyA_f = S_f·(HbyA)_f, (·)_f from interpolationSchemes key flux(HbyA) (default linear, eq 3.17)"
+    confidence: high
+    arguments: [HbyA]
+    active_in_case: "yes (interpolation key flux(HbyA) -> default linear)"
+    reviewed: false
+    note: >
+      Label kept from the reviewed icoFoam entry. Naming caveat: OpenFOAM's
+      own "reconstruct" (fvc::reconstruct) goes face->cell, the opposite
+      direction; this operator is cell->face (flux construction). See notes.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 7
+    namespace: fvc
+    function: interpolate
+    scope: operator
+    term_kind: term
+    physical_type: interpolation
+    discretization_role: explicit
+    doc_reference: >-
+      Programmer's Guide v2512 §3.4.10 p.44 ("Face interpolate",
+      faceInterpolate()) and eq 3.17 p.40 (central differencing);
+      VERSION-SENSITIVE: the guide names faceInterpolate(), not fvc::interpolate,
+      and v2006 selects the scheme from interpolationSchemes
+    math: "(1/A)_f = f_x (1/A)_P + (1 − f_x)(1/A)_N"
+    confidence: high
+    arguments: [rAU]
+    active_in_case: "yes (ddtCorr defaults to true, so this branch runs)"
+    reviewed: false
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 7
+    namespace: fvc
+    function: ddtCorr
+    scope: operator
+    term_kind: term
+    physical_type: temporal_flux_correction
+    discretization_role: explicit
+    doc_reference: >-
+      not covered in Programmer's Guide v2512; source:
+      fixtures/pimpleFoam_v2006/upstream/fvcDdt.C:208-228,
+      fixtures/pimpleFoam_v2006/upstream/EulerDdtScheme.C:523-550,
+      fixtures/pimpleFoam_v2006/upstream/ddtScheme.C:143-213
+    math: >-
+      ddtCorr = c_f (φ^o − S_f·(U^o)_f)/Δt (Euler), with
+      c_f = 1 − min(|φ^o − S_f·(U^o)_f| / |φ^o|, 1) and c_f = 0 on patches where U fixes value
+    confidence: medium
+    arguments: [U, phi, Uf]
+    active_in_case: "yes (numerical flux correction; static mesh, so it reduces to ddtCorr(U, phi) -- fixtures/pimpleFoam_v2006/upstream/fvcDdt.C:220-227)"
+    reviewed: false
+    note: >
+      Label kept from the reviewed icoFoam entry. Multiplied by
+      interpolate(rAU), this is the transient part of the Rhie-Chow-type
+      face-flux interpolation: numerical, not a continuum term.
+      VERSION-SENSITIVE: the icoFoam fixture had 2 arguments (U, phi); this
+      v2006 one has 3 (U, phi, Uf) and dispatches on U.mesh().dynamic().
+      The coefficient c_f is the "standard" (ddtPhiCoeff = -1, v1712-style)
+      branch: EulerDdtScheme.C:546 calls the 3-argument
+      fvcDdtPhiCoeff(U, phi, phiCorr) at ddtScheme.C:143-213 directly, which
+      never reads experimentalDdtCorr. That switch (default 0,
+      fixtures/pimpleFoam_v2006/upstream/ddtSchemeBase.C:34-37; ddtScheme.H:74-76) is read only by
+      the other overloads (ddtScheme.C:306, 330, 361).
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 7
+    namespace: ""
+    function: zeroFilter
+    call_form: member_dot
+    receiver: MRF
+    scope: bookkeeping
+    physical_type: mrf_flux_filter
+    arguments: ["fvc::interpolate(rAU)*fvc::ddtCorr(U, phi, Uf)"]
+    active_in_case: "no (no MRF, so the argument passes through unchanged)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 11
+    namespace: fvc
+    function: interpolate
+    scope: operator
+    term_kind: term
+    physical_type: interpolation
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.10 p.44 (Face interpolate) and eq 3.17 p.40; VERSION-SENSITIVE as line 7"
+    math: "(1/A)_f = f_x (1/A)_P + (1 − f_x)(1/A)_N"
+    confidence: high
+    arguments: [rAU]
+    active_in_case: "no (in the else branch; ddtCorr is true)"
+    reviewed: false
+    note: >
+      AMBIGUOUS/SUSPECT: this else branch adds interpolate(rAU) (dimension:
+      time) to phiHbyA (dimension: volume flux) with no ddtCorr factor. It
+      looks like an upstream bug in v2006. The case never takes this branch.
+      Composition edges built by the current graph merge both branches into
+      one phiHbyA chain, which is wrong.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 11
+    namespace: ""
+    function: zeroFilter
+    call_form: member_dot
+    receiver: MRF
+    scope: bookkeeping
+    physical_type: mrf_flux_filter
+    arguments: ["fvc::interpolate(rAU)"]
+    active_in_case: "no (dead branch and no MRF)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 14
+    namespace: ""
+    function: makeRelative
+    call_form: member_dot
+    receiver: MRF
+    scope: bookkeeping
+    physical_type: mrf_flux_relative
+    arguments: [phiHbyA]
+    active_in_case: "no (no MRF)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 18
+    namespace: fvc
+    function: makeRelative
+    scope: bookkeeping
+    physical_type: mesh_motion_flux_adjustment
+    arguments: [phiHbyA, U]
+    active_in_case: "no (inside if p.needReference(); p has a fixedValue outlet, and the mesh is static)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL (not in the ontology; the extractor tags it
+      UNKNOWN:fvc::makeRelative). No-op unless mesh.moving()
+      (fixtures/pimpleFoam_v2006/upstream/fvcMeshPhi.C:76-86). Scope bookkeeping although it is an fvc::
+      call: it is a frame change of an existing flux (subtracts the mesh
+      motion flux, guide Table 3.1 p.35 "Face motion fluxes φg"), not a
+      discretised differential operator of Table 3.2.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 19
+    namespace: ""
+    function: adjustPhi
+    call_form: free_function
+    scope: bookkeeping
+    physical_type: global_flux_balance
+    arguments: [phiHbyA, U, p]
+    active_in_case: "no (p.needReference() is expected to be false)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 20
+    namespace: fvc
+    function: makeAbsolute
+    scope: bookkeeping
+    physical_type: mesh_motion_flux_adjustment
+    arguments: [phiHbyA, U]
+    active_in_case: "no (same branch as line 18)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. No-op unless mesh.moving()
+      (fixtures/pimpleFoam_v2006/upstream/fvcMeshPhi.C:115-125). Scope bookkeeping, same reason as line 18.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 27
+    namespace: ""
+    function: H1
+    call_form: member_dot
+    receiver: UEqn
+    scope: bookkeeping
+    physical_type: matrix_offdiagonal_sum
+    arguments: []
+    active_in_case: "yes (consistent yes -> SIMPLEC rAtU)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Matrix accessor (fixtures/pimpleFoam_v2006/upstream/fvMatrix.C:862), used
+      for the SIMPLEC coefficient rAtU = 1/max(A − H1, 0.1 A). The same line
+      also calls max(...), a free function that is not listed.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 29
+    namespace: fvc
+    function: interpolate
+    scope: operator
+    term_kind: term
+    physical_type: interpolation
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.10 p.44 (Face interpolate) and eq 3.17 p.40; VERSION-SENSITIVE as line 7; SIMPLEC not covered"
+    math: "(rAtU − rAU)_f, linear face interpolation"
+    confidence: high
+    arguments: [rAtU() - rAU]
+    active_in_case: "yes (consistent yes)"
+    reviewed: false
+    note: >
+      The call starts on line 29, and the statement (phiHbyA +=) starts on
+      line 28. gate1 matches on the call's own start line (29).
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 29
+    namespace: fvc
+    function: snGrad
+    scope: operator
+    term_kind: term
+    physical_type: pressure_gradient_face_normal
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.6 p.42 eq 3.28 (surface normal gradient); Table 3.2 p.39 (Gradient, snGrad); SIMPLEC use not covered"
+    math: "n_f·(∇p)_f ≈ (p_N − p_P)/|d| + non-orthogonal correction (snGradSchemes corrected)"
+    confidence: medium
+    arguments: [p]
+    active_in_case: "yes (consistent yes; snGradSchemes default corrected)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL (draft: surface_normal_gradient). Operator identity is
+      the guide's surface normal gradient; labelled by what it is in context
+      (face-normal pressure gradient), consistent with fvc::grad(p) ->
+      pressure_gradient. Role in the equation: SIMPLEC flux consistency term
+      (rAtU − rAU)_f (∂p/∂n)_f |S_f| -- algorithmic, not a new physical term.
+      Owner decision 2026-09-17 (Rule 1): operand-aware label.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 30
+    namespace: fvc
+    function: grad
+    scope: operator
+    term_kind: term
+    physical_type: pressure_gradient
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.6 p.42 eq 3.25; Table 3.2 p.39; SIMPLEC use not covered"
+    math: "∫_V ∇p dV = Σ_f S_f p_f"
+    confidence: high
+    arguments: [p]
+    active_in_case: "yes (consistent yes)"
+    reviewed: false
+    note: >
+      Label changed from draft pressure_gradient_explicit (see UEqn.H:21).
+      Context: HbyA -= (rAU − rAtU) ∇p, the cell-centred SIMPLEC consistency
+      correction.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 39
+    namespace: ""
+    function: constrainPressure
+    call_form: free_function
+    scope: bookkeeping
+    physical_type: boundary_constraint
+    arguments: [p, U, phiHbyA, rAtU(), MRF]
+    active_in_case: "no-op (only acts on fixedFluxPressure p patches; this case's p patches are zeroGradient/fixedValue/empty)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Verified against fixtures/pimpleFoam_v2006/upstream/constrainPressure.C:36-79
+      (the (p, U, phiHbyA, rAU, MRF) overload at 96-107 forwards there): it
+      only calls updateSnGrad on fixedFluxPressure patches. Case p BCs
+      checked in data/datasets_29_10_2021/datasets/of_cylinder2D_binary/0.org/p.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 46
+    namespace: fvm
+    function: laplacian
+    scope: operator
+    term_kind: term
+    physical_type: diffusion
+    discretization_role: implicit
+    doc_reference: "Programmer's Guide v2512 §3.4.1 p.40 eq 3.14-3.15; Table 3.2 p.39 (laplacian(Gamma, phi))"
+    math: "∫_V ∇·(Γ∇p) dV = Σ_f Γ_f S_f·(∇p)_f, Γ = rAtU (interpolated to faces)"
+    confidence: high
+    arguments: [rAtU(), p]
+    active_in_case: "yes (laplacianSchemes default Gauss linear corrected)"
+    reviewed: false
+    note: >
+      Labelled diffusion to match the reviewed icoFoam decision (same
+      operator, guide eq 3.14; the equation context lives in the graph).
+      In context this is the pressure-Poisson operator derived from
+      continuity, not physical diffusion. The icoFoam argument was rAU; here
+      it is rAtU() because consistent is yes. Eq 3.15: implicit for the
+      orthogonal part, explicit non-orthogonal correction.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 46
+    namespace: fvc
+    function: div
+    scope: operator
+    term_kind: term
+    physical_type: flux_divergence
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.5 p.41 eq 3.24 (surface-field argument, φ_f given directly); Table 3.2 p.39 (Divergence, div(chi)); §3.4.10 p.43 (surfaceIntegrate)"
+    math: "(1/V_P) Σ_f phiHbyA_f  (= fvc::surfaceIntegrate)"
+    confidence: high
+    arguments: [phiHbyA]
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      phiHbyA is a surfaceScalarField, so this is fvc::div(ssf) =
+      surfaceIntegrate, which looks up NO divScheme
+      (fixtures/pimpleFoam_v2006/upstream/fvcDiv.C:46-61). The guide explicitly separates this "Divergence" (§3.4.5,
+      "not the divergence of the product of a velocity and dependent
+      variable") from "Convection" (§3.4.2), so the ontology's
+      convection_explicit for every fvc::div contradicts the guide.
+      flux_divergence follows the reviewed icoFoam fvi::div entry.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 49
+    namespace: ""
+    function: setReference
+    call_form: member_dot
+    receiver: pEqn
+    scope: bookkeeping
+    physical_type: pressure_reference
+    arguments: [pRefCell, pRefValue]
+    active_in_case: "probably no (only acts when p needs a reference)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 51
+    namespace: ""
+    function: solve
+    call_form: member_dot
+    receiver: pEqn
+    scope: bookkeeping
+    physical_type: linear_solve
+    arguments: ["mesh.solver(p.select(pimple.finalInnerIter()))"]
+    active_in_case: "yes"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 55
+    namespace: ""
+    function: flux
+    call_form: member_dot
+    receiver: pEqn
+    scope: bookkeeping
+    physical_type: flux_correction
+    arguments: []
+    active_in_case: "yes (nNonOrthogonalCorrectors 0, so this is the final iteration)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. phi = phiHbyA - pEqn.flux(). Borderline: numerically
+      this is the face flux of the solved Laplacian, Σ-form (rAtU)_f S_f·(∇p)_f,
+      i.e. the face pressure-gradient flux. Kept bookkeeping because it is an
+      fvMatrix accessor (fixtures/pimpleFoam_v2006/upstream/fvMatrix.C:910) of an operator
+      already labelled at line 46, not a new term.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 62
+    namespace: ""
+    function: relax
+    call_form: member_dot
+    receiver: p
+    scope: bookkeeping
+    physical_type: explicit_under_relaxation
+    arguments: []
+    active_in_case: "believed no (no relaxationFactors; relaxField not checked line by line)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 64
+    namespace: fvc
+    function: grad
+    scope: operator
+    term_kind: term
+    physical_type: pressure_gradient
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §1.1.3 p.12; §3.4.6 p.42 eq 3.25; Table 3.2 p.39"
+    math: "U = HbyA − rAtU ∇p, ∫_V ∇p dV = Σ_f S_f p_f"
+    confidence: high
+    arguments: [p]
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      Label changed from draft pressure_gradient_explicit (see UEqn.H:21).
+      This is the momentum-corrector application of the pressure gradient.
+      icoFoam (org-dev) used fvi::grad here; v2006 uses fvc::grad because
+      fvi:: does not exist in v2006 (nor in the v2512 guide).
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 65
+    namespace: ""
+    function: correctBoundaryConditions
+    call_form: member_dot
+    receiver: U
+    scope: bookkeeping
+    physical_type: boundary_update
+    arguments: []
+    active_in_case: "yes"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 66
+    namespace: ""
+    function: correct
+    call_form: member_dot
+    receiver: fvOptions
+    scope: bookkeeping
+    physical_type: field_constraint_user
+    arguments: [U]
+    active_in_case: "no (no fvOptions)"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 69
+    namespace: fvc
+    function: correctUf
+    scope: bookkeeping
+    physical_type: mesh_motion_flux_adjustment
+    arguments: [Uf, U, phi]
+    active_in_case: "no (static mesh, so Uf is not allocated)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Verified: no-op unless mesh.dynamic()
+      (fixtures/pimpleFoam_v2006/upstream/fvcMeshPhi.C:224-239).
+      Scope bookkeeping: moving-mesh face-velocity bookkeeping, not a
+      Table 3.2 operator.
+
+  - source_file: fixtures/pimpleFoam_v2006/pEqn.H
+    line: 72
+    namespace: fvc
+    function: makeRelative
+    scope: bookkeeping
+    physical_type: mesh_motion_flux_adjustment
+    arguments: [phi, U]
+    active_in_case: "no (static mesh)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. No-op unless mesh.moving()
+      (fixtures/pimpleFoam_v2006/upstream/fvcMeshPhi.C:76-86). Scope bookkeeping, same reason as line 18.
+
+  # ----------------------------------------------- IncompressibleTurbulenceModel.C
+  - source_file: fixtures/pimpleFoam_v2006/IncompressibleTurbulenceModel.C
+    line: 117
+    namespace: ""
+    function: divDevRhoReff
+    call_form: free_function
+    scope: operator
+    term_kind: forwarding
+    physical_type: viscous_stress_divergence
+    discretization_role: implicit+explicit
+    doc_reference: >-
+      not covered in Programmer's Guide v2512 (dispatch); physical meaning as
+      UEqn.H:9 (§1.2.4 p.18 pisoFoam header, −∇·R); source:
+      fixtures/pimpleFoam_v2006/IncompressibleTurbulenceModel.C:112-118,
+      linearViscousStress.C:93-105
+    math: "same as UEqn.H:9 divDevReff(U) (ρ ≡ 1 for incompressible)"
+    confidence: medium
+    arguments: [U]
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. This is the body of divDevReff(U): an unqualified
+      virtual call that the runtime Stokes model resolves to
+      linearViscousStress::divDevRhoReff(U). Syntactically it is a plain
+      identifier call (an implicit this->), so call_form is free_function;
+      semantically it is a member call. term_kind: forwarding (Rule 3): not a
+      second viscous term; must not be counted in addition to UEqn.H:9.
+
+  # ---------------------------------------------------- linearViscousStress.C
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 87
+    namespace: fvc
+    function: grad
+    scope: operator
+    term_kind: argument
+    physical_type: velocity_gradient
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.6 p.42 eq 3.25; §3.1.1 p.29 eq 3.3 (gradient of a vector is a rank-2 tensor, (∇U)_ij = ∂_i U_j)"
+    math: "∫_V ∇U dV = Σ_f S_f U_f, inside devRhoReff = −ν_eff dev(twoSymm(∇U))"
+    confidence: high
+    arguments: [this->U_]
+    in_momentum_path: false
+    active_in_case: "n/a (devRhoReff() is not called by the momentum equation)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. The ontology labels every fvc::grad
+      "pressure_gradient_explicit", which is wrong for a velocity gradient.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 102
+    namespace: fvc
+    function: div
+    scope: operator
+    term_kind: term
+    physical_type: viscous_stress_divergence_explicit
+    discretization_role: explicit
+    doc_reference: >-
+      Programmer's Guide v2512 §3.4.5 p.41 eq 3.24 (Divergence of a volField,
+      explicit, distinct from convection); Table 3.2 p.39; §3.1.2 p.30 eq 3.5
+      (divergence of a tensor, (∇·T)_j = ∂_i T_ij); dev2 not covered (see the
+      dev2 entry). VERSION-SENSITIVE: the guide says the volField is
+      interpolated by central differencing; v2006 uses the divSchemes entry
+      (fixtures/pimpleFoam_v2006/upstream/fvcDiv.C:85-95), which here is default Gauss linear, i.e. the same.
+    math: >-
+      ∫_V ∇·[ν_eff((∇U)^T − (2/3)(∇·U)I)] dV = Σ_f S_f·[ν_eff dev2((∇U)^T)]_f
+      (carries a leading minus in divDevRhoReff); for constant ν it equals
+      (1/3)ν∇(∇·U), zero in the continuum for solenoidal U
+    confidence: medium
+    arguments: ["(this->alpha_*this->rho_*this->nuEff())*dev2(T(fvc::grad(U)))"]
+    in_momentum_path: true
+    active_in_case: >
+      yes, but small: zero in the continuous limit for constant nu and
+      div U = 0; discretely non-zero (see note)
+    reviewed: false
+    note: >
+      PROPOSED LABEL. This is the explicit part of the deviatoric viscous
+      stress divergence, ∇·(ν_eff dev2((∇U)^T)), with a leading minus sign.
+      Derivation with the guide's conventions (eq 3.3, 3.5): ((∇U)^T)_ij =
+      ∂_j U_i, so ∇·(ν(∇U)^T) = ν∇(∇·U) for constant ν; dev2(A) = A −
+      (2/3)tr(A)I (fixtures/pimpleFoam_v2006/upstream/TensorI.H:689-694: t − 2*sph(t);
+      sph = (1/3)tr, TensorI.H:625-631) with tr((∇U)^T) = ∇·U; so the term is (1/3)ν∇(∇·U). In the
+      discrete solver, ∇·U from cell-centred Gauss-linear grad(U) is not
+      exactly zero, so the term is small but non-zero. Its magnitude has NOT
+      been measured.
+      Runtime fvSchemes key (inferred from v2006 field-naming code, not from
+      a run): div((nuEff*dev2(T(grad(U))))). The case file lists
+      div((nuEff*dev(T(grad(U))))) (dev, not dev2), which does not match,
+      so OpenFOAM falls back to default -- same scheme, Gauss linear.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 102
+    namespace: fvc
+    function: grad
+    scope: operator
+    term_kind: argument
+    physical_type: velocity_gradient
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.6 p.42 eq 3.25; §3.1.1 p.29 eq 3.3"
+    math: "∫_V ∇U dV = Σ_f S_f U_f (rank-2 tensor field, Gauss linear)"
+    confidence: high
+    arguments: [U]
+    in_momentum_path: true
+    active_in_case: "yes (gradSchemes key grad(U) -> default Gauss linear)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL; the ontology would say pressure_gradient_explicit
+      (wrong). Nested inside the fvc::div argument: part of the viscous
+      term, not a standalone equation term.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 102
+    namespace: ""
+    function: nuEff
+    call_form: this_member
+    scope: operator_argument
+    term_kind: argument
+    physical_type: effective_viscosity
+    discretization_role: coefficient
+    doc_reference: >-
+      coefficient Γ of Programmer's Guide v2512 §3.4.1 p.40 eq 3.14 (μ in the
+      §1.1.3 p.12 example); nuEff itself not covered; source:
+      fixtures/pimpleFoam_v2006/Stokes.C:123-134
+    math: "ν_eff = ν (Stokes, constant 1e-3 m^2/s)"
+    confidence: high
+    arguments: []
+    in_momentum_path: true
+    active_in_case: "yes (Stokes: nuEff = nu = 1e-3, constant)"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. A coefficient, not an operator. Owner decision
+      2026-09-17 (Rule 2): scope operator_argument -- kept for Gate 1
+      identity matching, never a ROM term. Written as this->nuEff() inside a
+      template, it is a field_expression call and is not extracted by the
+      qualified-only extractor. this->alpha_ and this->rho_ are
+      geometricOneField and are identities in the incompressible case.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 102
+    namespace: ""
+    function: dev2
+    call_form: free_function
+    scope: operator_argument
+    term_kind: argument
+    physical_type: deviatoric_part_2
+    discretization_role: algebraic
+    doc_reference: >-
+      not covered in Programmer's Guide v2512 (only dev T = T − (1/3)(tr T)I,
+      eq A.32 p.52 and Table 2.2 p.26); source:
+      fixtures/pimpleFoam_v2006/upstream/TensorI.H:689-694 (sph at 625-631)
+    math: "dev2(A) = A − (2/3) tr(A) I"
+    confidence: high
+    arguments: [T(fvc::grad(U))]
+    in_momentum_path: true
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Scope operator_argument (Rule 2). Pointwise tensor
+      algebra, no discretisation. The 2/3
+      (not 1/3) makes the explicit part plus the implicit laplacian sum to
+      ∇·(ν dev(twoSymm(∇U))). The dataset fvSchemes key uses dev, not dev2.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 102
+    namespace: ""
+    function: T
+    call_form: free_function
+    scope: operator_argument
+    term_kind: argument
+    physical_type: tensor_transpose
+    discretization_role: algebraic
+    doc_reference: "Programmer's Guide v2512 §2.2 p.24 eq 2.2; Table 2.2 p.26 (Transpose, T.T()); §A.2.9 p.52"
+    math: "(A^T)_ij = A_ji"
+    confidence: high
+    arguments: [fvc::grad(U)]
+    in_momentum_path: true
+    active_in_case: "yes"
+    reviewed: false
+    note: >
+      PROPOSED LABEL. Scope operator_argument (Rule 2). Pointwise tensor
+      algebra. The guide shows the member
+      form T.T(); the source uses the free-function field form T(tf).
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 103
+    namespace: fvm
+    function: laplacian
+    scope: operator
+    term_kind: term
+    physical_type: diffusion
+    discretization_role: implicit
+    doc_reference: "Programmer's Guide v2512 §3.4.1 p.40 eq 3.14-3.15; Table 3.2 p.39; §1.1.3 p.12 (−∇·μ∇U ↔ −fvm::laplacian(mu, U))"
+    math: "∫_V ∇·(ν_eff∇U) dV = Σ_f (ν_eff)_f S_f·(∇U)_f"
+    confidence: high
+    arguments: ["this->alpha_*this->rho_*this->nuEff()", U]
+    in_momentum_path: true
+    active_in_case: "yes (laplacianSchemes default Gauss linear corrected; runtime key laplacian(nuEff,U), inferred)"
+    reviewed: false
+    note: >
+      Carries a leading minus sign, which the graph now records (sign=-1).
+      This is the textbook viscous diffusion term (nu = 1e-3).
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 118
+    namespace: fvc
+    function: div
+    scope: operator
+    term_kind: term
+    physical_type: viscous_stress_divergence_explicit
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.5 p.41 eq 3.24; Table 3.2 p.39; dev2 not covered (as line 102)"
+    math: "∫_V ∇·[ρ ν_eff dev2((∇U)^T)] dV (variable-density overload)"
+    confidence: medium
+    arguments: ["(this->alpha_*rho*this->nuEff())*dev2(T(fvc::grad(U)))"]
+    in_momentum_path: false
+    active_in_case: "n/a (the (rho, U) overload is not called by pimpleFoam)"
+    reviewed: false
+    note: PROPOSED LABEL. Included only so that per-file precision is complete.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 118
+    namespace: fvc
+    function: grad
+    scope: operator
+    term_kind: argument
+    physical_type: velocity_gradient
+    discretization_role: explicit
+    doc_reference: "Programmer's Guide v2512 §3.4.6 p.42 eq 3.25; §3.1.1 p.29 eq 3.3"
+    math: "∫_V ∇U dV = Σ_f S_f U_f"
+    confidence: high
+    arguments: [U]
+    in_momentum_path: false
+    active_in_case: "n/a"
+    reviewed: false
+    note: PROPOSED LABEL.
+
+  - source_file: fixtures/pimpleFoam_v2006/linearViscousStress.C
+    line: 119
+    namespace: fvm
+    function: laplacian
+    scope: operator
+    term_kind: term
+    physical_type: diffusion
+    discretization_role: implicit
+    doc_reference: "Programmer's Guide v2512 §3.4.1 p.40 eq 3.14; Table 3.2 p.39"
+    math: "∫_V ∇·(ρ ν_eff ∇U) dV"
+    confidence: high
+    arguments: ["this->alpha_*rho*this->nuEff()", U]
+    in_momentum_path: false
+    active_in_case: "n/a"
+    reviewed: false
