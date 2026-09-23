@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-09-23T06:36:04.311053",
+  "git_hash": "afb29bc83fc0f9e1df3beeee2eeb9c310327f0e5",
+  "torch_version": "2.12.1",
+  "case_dir": "/mnt/s/opencode/sage-cfd/data/datasets_29_10_2021/datasets/of_cylinder2D_binary",
+  "source_dir": "/mnt/s/opencode/sage-cfd/phase2/fixtures/pimpleFoam_v2006",
+  "data_dir": null,
+  "ranks": [
+    8,
+    11,
+    15,
+    23
+  ],
+  "targets": [
+    "discrete",
+    "continuous"
+  ],
+  "t_split": 8.0,
+  "n_test": 81,
+  "val_fraction": 0.2,
+  "lambda_grid": [
+    0.0,
+    1e-08,
+    1e-06,
+    0.0001,
+    0.01,
+    1.0,
+    100.0
+  ],
+  "n_loo_blocks": 5,
+  "rollout_steps_for_selection": 20,
+  "timings_s": {
+    "build_libraries_s": 0.08053436799946212,
+    "load_data_s": 34.061895856000774,
+    "grid_s": 136.1856909750004,
+    "sanity_checks_s": 3.6354282520005654,
+    "noise_band_s": 37.99747594599921,
+    "ablation_s": 24.362791889999244,
+    "total_s": 236.67648188599924
+  },
+  "flowtorch_version": "1.6.1"
+}

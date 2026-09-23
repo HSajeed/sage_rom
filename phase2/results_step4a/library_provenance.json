@@ -1,0 +1,154 @@
+{
+  "case_dir": "/mnt/s/opencode/sage-cfd/data/datasets_29_10_2021/datasets/of_cylinder2D_binary",
+  "source_dir": "/mnt/s/opencode/sage-cfd/phase2/fixtures/pimpleFoam_v2006",
+  "case_activity": {
+    "simulation_type": "laminar",
+    "nu": 0.001,
+    "mrf_active": false,
+    "fvoptions_active": false,
+    "ddt_scheme": "Euler",
+    "pimple": {
+      "momentumPredictor": "yes",
+      "transonic": "no",
+      "nOuterCorrectors": "50",
+      "nCorrectors": "1",
+      "nNonOrthogonalCorrectors": "0",
+      "consistent": "yes",
+      "residualControl": {
+        "\"(U|p)\"": {
+          "relTol": "0",
+          "tolerance": "0.0001"
+        }
+      }
+    }
+  },
+  "arm2": {
+    "families": [
+      "const",
+      "lin",
+      "quad"
+    ],
+    "provenance": [
+      {
+        "qualified_name": "textbook:convection",
+        "arguments": [],
+        "physical_type": "convection",
+        "families": [
+          "quad"
+        ],
+        "status": "included"
+      },
+      {
+        "qualified_name": "textbook:diffusion",
+        "arguments": [],
+        "physical_type": "diffusion",
+        "families": [
+          "lin"
+        ],
+        "status": "included"
+      },
+      {
+        "qualified_name": "textbook:pressure_gradient",
+        "arguments": [],
+        "physical_type": "pressure_gradient",
+        "families": [
+          "const",
+          "lin",
+          "quad"
+        ],
+        "status": "included"
+      }
+    ]
+  },
+  "arm3": {
+    "families": [
+      "const",
+      "lin",
+      "quad"
+    ],
+    "provenance": [
+      {
+        "node_id": "UEqn.H::ddt_7",
+        "qualified_name": "fvm::ddt",
+        "arguments": [
+          "U"
+        ],
+        "physical_type": "time_derivative",
+        "families": [],
+        "status": "lhs"
+      },
+      {
+        "node_id": "UEqn.H::div_7",
+        "qualified_name": "fvm::div",
+        "arguments": [
+          "phi",
+          "U"
+        ],
+        "physical_type": "convection",
+        "families": [
+          "quad"
+        ],
+        "status": "included"
+      },
+      {
+        "node_id": "UEqn.H::DDt_8",
+        "qualified_name": "DDt",
+        "arguments": [
+          "U"
+        ],
+        "physical_type": "mrf_coriolis_source",
+        "families": [],
+        "status": "dropped (mrf_active=False)"
+      },
+      {
+        "node_id": "linearViscousStress.C::div_102",
+        "qualified_name": "fvc::div",
+        "arguments": [
+          "(nuEff)*dev2(T(fvc::grad(U)))"
+        ],
+        "physical_type": "viscous_stress_divergence_explicit",
+        "families": [
+          "lin"
+        ],
+        "status": "included"
+      },
+      {
+        "node_id": "linearViscousStress.C::laplacian_103",
+        "qualified_name": "fvm::laplacian",
+        "arguments": [
+          "nuEff",
+          "U"
+        ],
+        "physical_type": "diffusion",
+        "families": [
+          "lin"
+        ],
+        "status": "included"
+      },
+      {
+        "node_id": "UEqn.H::fvOptions_11",
+        "qualified_name": "fvOptions",
+        "arguments": [
+          "U"
+        ],
+        "physical_type": "user_source",
+        "families": [],
+        "status": "dropped (fvoptions_active=False)"
+      },
+      {
+        "node_id": "UEqn.H::grad_21",
+        "qualified_name": "fvc::grad",
+        "arguments": [
+          "p"
+        ],
+        "physical_type": "pressure_gradient",
+        "families": [
+          "const",
+          "lin",
+          "quad"
+        ],
+        "status": "included"
+      }
+    ]
+  }
+}

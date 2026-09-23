@@ -1,0 +1,417 @@
+{
+  "dmd_reproduction": {
+    "tolerance": 1e-06,
+    "passed": true,
+    "max_relative_mismatch": 4.710465429430213e-10,
+    "rows": [
+      {
+        "window": "full",
+        "rank": 8,
+        "diverged": false,
+        "got_full_field": 0.07978440548962137,
+        "ref_full_field": 0.07978440548963557,
+        "rel_diff_full_field": 1.779417524047159e-13,
+        "got_fluctuation": 0.2726809117755119,
+        "ref_fluctuation": 0.2726809117755604,
+        "rel_diff_fluctuation": 1.7792498147451094e-13,
+        "projected_rollout_full_field": 0.0796476657609063
+      },
+      {
+        "window": "full",
+        "rank": 11,
+        "diverged": false,
+        "got_full_field": 0.06360105659457821,
+        "ref_full_field": 0.06360105659464883,
+        "rel_diff_full_field": 1.1104227812452698e-12,
+        "got_fluctuation": 0.21737072546528569,
+        "ref_fluctuation": 0.21737072546552708,
+        "rel_diff_fluctuation": 1.1105002323204136e-12,
+        "projected_rollout_full_field": 0.06379300490518686
+      },
+      {
+        "window": "full",
+        "rank": 15,
+        "diverged": false,
+        "got_full_field": 0.03667267137063783,
+        "ref_full_field": 0.036672671370728875,
+        "rel_diff_full_field": 2.4826450735693218e-12,
+        "got_fluctuation": 0.12533699292764752,
+        "ref_fluctuation": 0.1253369929279587,
+        "rel_diff_fluctuation": 2.4826489846111835e-12,
+        "projected_rollout_full_field": 0.036704382772631085
+      },
+      {
+        "window": "full",
+        "rank": 23,
+        "diverged": false,
+        "got_full_field": 0.017086425293270355,
+        "ref_full_field": 0.017086425293132448,
+        "rel_diff_full_field": 8.071146803809994e-12,
+        "got_fluctuation": 0.0583966503148188,
+        "ref_fluctuation": 0.058396650314347466,
+        "rel_diff_fluctuation": 8.071204508814113e-12,
+        "projected_rollout_full_field": 0.017541952222988457
+      },
+      {
+        "window": "post_transient",
+        "rank": 8,
+        "diverged": false,
+        "got_full_field": 0.01400159575678426,
+        "ref_full_field": 0.01400159575678546,
+        "rel_diff_full_field": 8.561123622777512e-14,
+        "got_fluctuation": 0.047853560778474746,
+        "ref_fluctuation": 0.04785356077847885,
+        "rel_diff_fluctuation": 8.569657577192168e-14,
+        "projected_rollout_full_field": 0.014229038582172953
+      },
+      {
+        "window": "post_transient",
+        "rank": 11,
+        "diverged": false,
+        "got_full_field": 0.003469681397919015,
+        "ref_full_field": 0.0034696813979192723,
+        "rel_diff_full_field": 7.411999138243217e-14,
+        "got_fluctuation": 0.011858406180367712,
+        "ref_fluctuation": 0.011858406180368592,
+        "rel_diff_fluctuation": 7.41672016409969e-14,
+        "projected_rollout_full_field": 0.0034773055072363558
+      },
+      {
+        "window": "post_transient",
+        "rank": 15,
+        "diverged": false,
+        "got_full_field": 0.0020782278304135515,
+        "ref_full_field": 0.002078227830259771,
+        "rel_diff_full_field": 7.399604211868723e-11,
+        "got_fluctuation": 0.007102804817516983,
+        "ref_fluctuation": 0.007102804816991403,
+        "rel_diff_fluctuation": 7.399606118983478e-11,
+        "projected_rollout_full_field": 0.0021088393999441316
+      },
+      {
+        "window": "post_transient",
+        "rank": 23,
+        "diverged": false,
+        "got_full_field": 0.00040683532190058207,
+        "ref_full_field": 0.0004068353217089437,
+        "rel_diff_full_field": 4.710465429430213e-10,
+        "got_fluctuation": 0.001390449998812933,
+        "ref_fluctuation": 0.0013904499981579664,
+        "rel_diff_fluctuation": 4.710464477443824e-10,
+        "projected_rollout_full_field": 0.0004090974467914294
+      }
+    ],
+    "note": "lambda=0 {lin} least squares in the raw SVD(X[:,:-1]) basis equals flowTorch's A_tilde = U^T Y V S^-1; lifted through the exact DMD modes phi = Y V S^-1 W with b = pinv(phi) x0 it reproduces phase1/results_v2 primary errors. The projected rollout x = U z of the same operator (projected_rollout_full_field) differs by up to ~3% because phi != U W."
+  },
+  "pod_floor": {
+    "tolerance": 1e-06,
+    "passed": true,
+    "max_relative_mismatch": 0.0,
+    "rows": [
+      {
+        "window": "full",
+        "rank": 8,
+        "got_full_field": 0.024792502232762994,
+        "ref_full_field": 0.024792502232762994,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.08473387841319001,
+        "ref_fluctuation": 0.08473387841319001,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "full",
+        "rank": 11,
+        "got_full_field": 0.01621827849460778,
+        "ref_full_field": 0.01621827849460778,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.055429565968428615,
+        "ref_fluctuation": 0.055429565968428615,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "full",
+        "rank": 15,
+        "got_full_field": 0.011295501085043716,
+        "ref_full_field": 0.011295501085043716,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.03860488169247147,
+        "ref_fluctuation": 0.03860488169247147,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "full",
+        "rank": 23,
+        "got_full_field": 0.004061845217810186,
+        "ref_full_field": 0.004061845217810186,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.013882257449766459,
+        "ref_fluctuation": 0.013882257449766459,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "post_transient",
+        "rank": 8,
+        "got_full_field": 0.0070782222520088586,
+        "ref_full_field": 0.0070782222520088586,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.024191395368341324,
+        "ref_fluctuation": 0.024191395368341324,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "post_transient",
+        "rank": 11,
+        "got_full_field": 0.0027329840772117656,
+        "ref_full_field": 0.0027329840772117656,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.009340579596585482,
+        "ref_fluctuation": 0.009340579596585482,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "post_transient",
+        "rank": 15,
+        "got_full_field": 0.0009499722338662529,
+        "ref_full_field": 0.0009499722338662529,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.0032467409301654366,
+        "ref_fluctuation": 0.0032467409301654366,
+        "rel_diff_fluctuation": 0.0
+      },
+      {
+        "window": "post_transient",
+        "rank": 23,
+        "got_full_field": 0.0002410426835968648,
+        "ref_full_field": 0.0002410426835968648,
+        "rel_diff_full_field": 0.0,
+        "got_fluctuation": 0.0008238168641685175,
+        "ref_fluctuation": 0.0008238168641685175,
+        "rel_diff_fluctuation": 0.0
+      }
+    ]
+  },
+  "null_control": {
+    "families_equal": true,
+    "regressor_identity": [
+      {
+        "target": "discrete",
+        "regressors_equal": true
+      },
+      {
+        "target": "continuous",
+        "regressors_equal": true
+      }
+    ],
+    "grid_cells": [
+      {
+        "window": "full",
+        "rank": 8,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 8,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 11,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 11,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 15,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 15,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 23,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "full",
+        "rank": 23,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 8,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 8,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 11,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 11,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 15,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 15,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 23,
+        "target": "discrete",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      },
+      {
+        "window": "post_transient",
+        "rank": 23,
+        "target": "continuous",
+        "relative_diffs": {
+          "lam_lin": 0.0,
+          "lam_quad": 0.0,
+          "train_residual": 0.0,
+          "val_residual": 0.0,
+          "forecast_full_field": 0.0,
+          "forecast_fluctuation": 0.0
+        }
+      }
+    ],
+    "max_relative_diff_over_grid": 0.0
+  }
+}
