@@ -26,9 +26,23 @@ extractor/
 
 validation/
   ground_truth_icofoam.yaml            REVIEWED 2026-08-27 -- all 10 entries reviewed:true
-  ground_truth_pimpleFoam_v2006.yaml   DRAFT answer key, 51 entries, NOT YET REVIEWED
+  ground_truth_pimpleFoam_v2006.yaml   REVIEWED 2026-09-17 -- all 51 entries reviewed:true
   gate1_check.py                       precision/recall of the extractor against ground truth
   check_pimplefoam_graph.py            checks pimpleFoam v2006 UEqn assembly (dispatch expansion, sign/side)
+  check_pimplefoam_drag_graph.py       same, on the drag-modified fixture (8 UEqn terms incl. fvm::Sp(cD*mag(U), U))
+
+static_rom/                    Step 4 static (closed-form) test -- the current Phase 2 test vehicle
+  case_activity.py             reads the case (turbulence/transport, fvSchemes, fvSolution, MRF, fvOptions)
+  term_library.py              physical_type -> regressor-family rule table; arm2_library / arm3_library
+  opinf.py                     float64 POD, const/lin/quad (+ extra) regressors, block ridge, lambda
+                                 selection, discrete / continuous targets, rollout; quadratic_drag extra
+  run_step4a.py                grid + null control + sanity checks + noise band + library ablation
+  detectability.py             pre-run check: is an injected term's out-of-span part above the noise band?
+  test_static_rom.py           28 synthetic checks
+
+results_step4a/                Step 4a outputs (grid, noise band, sanity checks, ablation)
+DECISION_RULE_step5.md         Step 5 pre-registered decision rule -- DRAFT, pending owner sign-off
+case_4b/                       modified-solver kit (pimpleDragFoam) -- UNTESTED, marked DO-NOT-RUN
 
 rom/
   composable_operator_rom.py   shared ROM class; Arm 2 (hand-specified) and
@@ -40,6 +54,7 @@ fixtures/
   pimpleFoam_v2006/              real OpenFOAM.com v2006 pimpleFoam source + the
                                    dataset's own fvSchemes/turbulenceProperties --
                                    see "pimpleFoam v2006" section below
+  pimpleFoam_v2006_drag/         v2006 UEqn.H + fvm::Sp(cD*mag(U), U) (Step 4b candidate)
 ```
 
 ## Running it
@@ -58,6 +73,12 @@ python -m validation.gate1_check
 
 # ROM wiring smoke test (synthetic data, NOT CFD validation)
 python -m rom.composable_operator_rom
+
+# Step 4 static test (needs FLOWTORCH_DATASETS set; ~4 min)
+python -m static_rom.test_static_rom
+python -m static_rom.run_step4a                  # writes results_step4a/
+python -m static_rom.detectability --amplitude 0.3   # pre-run check for a 4b injected term
+python -m validation.check_pimplefoam_drag_graph
 ```
 
 ## What's real vs. scaffolded
@@ -84,21 +105,11 @@ and `interpolation` -- still a structural observation, not an accuracy
 result (see "Next steps" for why this isn't yet the test vehicle).
 
 **Explicitly NOT real yet -- do not mistake these for results:**
-- `ground_truth_pimpleFoam_v2006.yaml` (the pimpleFoam v2006 ground truth,
-  see below) is still a draft I (Claude) wrote while scaffolding this, not
-  independent ground truth. Every entry says `reviewed: false` and
-  `gate1_check.py` warns loudly about this every run. A Gate 1 "pass"
-  right now proves the harness works, not that the labels are correct --
-  review each entry against your own OpenFOAM knowledge before it counts.
 - The `fvi::` entries (icoFoam fixture only) are flagged low-confidence in
   `ontology.py` -- worth checking OpenFOAM-dev's own docs/changelog for what
   that namespace actually means before trusting "pressure_gradient" /
-  "convection" as their labels. On the pimpleFoam v2006 fixture, two more
-  ontology labels are pending review: the `fvc::div` of the expanded
-  `nuEff*dev2(T(grad(U)))` viscous term is currently labeled
-  `convection_explicit`, and the nested `fvc::grad(U)` inside it is labeled
-  `pressure_gradient_explicit` -- both look wrong for this term and need a
-  reviewer's correction.
+  "convection" as their labels. (The two pimpleFoam viscous-term mislabels
+  flagged earlier were fixed by operand-aware labels in `resolve_label`.)
 - `llm_labeler.py` is an interface + prompt template, not a live call --
   no API key configured in this environment. `stub_label()` raises
   `NotImplementedError` on purpose.
@@ -215,36 +226,29 @@ excludes anything so marked, so nested calls aren't double-counted as
 separate equation terms alongside the term they're part of.
 
 **Ground truth status.** `validation/ground_truth_pimpleFoam_v2006.yaml`
-is a **draft**: 51 entries, all `reviewed: false`. It still needs human
-review before any Gate 1 result against it counts (see "Explicitly NOT
-real yet" above for the two pending ontology mislabels found while
-scaffolding it).
+was owner-reviewed on 2026-09-17: all 51 entries are `reviewed: true`
+(commit `afb29bc`). Gate 1 recall and label/role agreement are 100% on all
+four pimpleFoam source files.
 
 ## Next steps
 
-The remaining work is tracked in `PATH_FORWARD.md` at the repo root (a
-local, gitignored file -- not in git, so it isn't linked here as a
-reference, but is the authoritative running plan). In order:
+The remaining work is tracked in `PATH_FORWARD.md` at the repo root. That
+file is local and gitignored, so it isn't linked here as a reference, but it
+is the authoritative running plan.
 
-1. **Human review of `ground_truth_pimpleFoam_v2006.yaml`** (51 entries),
-   plus the two ontology mislabels flagged above on the expanded viscous
-   term, and the still-open icoFoam ontology questions (velocity- vs.
-   pressure-diffusion distinction; what `fvi::` actually means; whether
-   `fvm::Sp` deserves a more specific `physical_type`).
-2. **Step 4a -- static control.** Phase 2 is being redesigned as a
-   *static*, closed-form test: least-squares fits on POD coefficients
-   (term-family selection, then term-wise projected operators), not
-   gradient-trained blocks. Step 4a runs this on the existing,
-   *unmodified*-solver dataset as a control -- expected to be a null
-   result by construction, since for this laminar/no-MRF/no-fvOptions case
-   parsing adds no continuum term beyond textbook Navier-Stokes (the
-   `dev2` term is ≈0 for divergence-free flow; the rest is numerical, not
-   physical).
-3. **Step 4b -- treatment**, requiring a local OpenFOAM install and a
-   modified-solver run with a genuinely out-of-span term (e.g. a
-   non-polynomial drag term -- `fvm::Sp` alone is linear and already
-   representable by the textbook arm, so it can't show a gain), then the
-   same static test (B) on that data.
+**Done: Step 4a, the static control** (`static_rom/`, `results_step4a/`).
+- Both arms are closed-form ridge fits on the same float64 POD coefficients.
+- On the unmodified dataset, Arm 3 ≡ Arm 2 exactly; this is the null control.
+- A λ=0 linear fit, lifted through exact DMD modes, reproduces the Phase 1 DMD errors to 4.7e-10.
+- Discrete `c + Az + H(z⊗z)` forecasts at 1.00–1.01× the POD floor on the transient-including window. Linear DMD sits at 3.2–4.2×.
+- The library ablation attributes the gain to the quadratic family.
+
+**Drafted: Step 5 decision rule** (`DECISION_RULE_step5.md`). Its thresholds come from the 4a noise band. It is not final until the owner signs it off, and it must be committed before any 4b data exists.
+
+**Open: the Step 4b design.**
+- The prepared drag injection `fvm::Sp(cD*mag(U), U)` fails the pre-run detectability check (`static_rom.detectability`).
+- On the shedding manifold, Φᵀ(|Ũ|Ũ) lies in span{1, z, z⊗z} to 7.6e-4 (r=8) … 1.8e-7 (r=23). The out-of-span signal at cD=0.3 is 180–4,600× below the decision threshold.
+- `case_4b/` is therefore marked DO-NOT-RUN. The choice of injected term (or a move to option B) is pending the owner's literature review.
 
 **Note on `ComposableOperatorROM`:** the trained ROM (`rom/`) is retained
 in the codebase but is **not** the current Phase 2 test vehicle. Its

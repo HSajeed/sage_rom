@@ -77,7 +77,7 @@ Graph → `build_from_operator_graph()` maps distinct `physical_type`s to learna
 
 ## 6. Testing & Validation
 
-- **No formal test framework** — validation is `__main__` smoke blocks + `test_synthetic.py` fixture.
+- **No formal test framework** — validation is `__main__` smoke blocks + `test_synthetic.py` fixture, plus plain-script check suites (`phase1/test_eval_protocol.py`, `phase2/static_rom/test_static_rom.py`, 28 checks).
 - Synthetic fixture: cos/sin spatial-pattern *pairs* at known frequencies (6, 12 Hz) + DC term + noise, shaped exactly like `CylinderSnapshots`. Docstrings document that an earlier single-term `spatial·cos(ωt)` fixture was correctly unfittable by any autonomous linear system — a genuine subtlety, fixed.
 - Gate 1 harness: precision/recall of extracted calls vs YAML answer key, per-line candidate pools (handles two calls sharing one line), exit code reflects mismatches/misses.
 - Synthetic-modification tests (two tiers): `fvm::Sp(lambda, U)` (known, easy → labeled `source_implicit`, high confidence) and `customForcing::spongeSink(U, spongeCoeff)` (unknown namespace, hard → labeled `UNRECOGNIZED`, routed to review).
@@ -93,10 +93,12 @@ Graph → `build_from_operator_graph()` maps distinct `physical_type`s to learna
 | fvSchemes fusion | Working |
 | Operator graph edges | Working (phiHbyA trace confirmed on icoFoam); pimpleFoam v2006 dispatch expansion verified by `check_pimplefoam_graph.py` |
 | Ground truth YAML (icoFoam) | **Reviewed 2026-08-27**, all 10 entries `reviewed:true`, harness passes without warnings |
-| Ground truth YAML (pimpleFoam v2006) | **Draft**, 51 entries, all `reviewed:false` — needs human review |
+| Ground truth YAML (pimpleFoam v2006) | **Reviewed 2026-09-17**, all 51 entries `reviewed:true` (`afb29bc`) |
 | llm_labeler | Interface/prompt only; `stub_label` raises `NotImplementedError` |
 | ComposableOperatorROM | Wiring smoke-tested on random synthetic data only; **retained but not the current Phase 2 test vehicle** — Arm 2/Arm 3 extra blocks are bias-free linear maps of the same span, superseded by the static Step 4 design (`PATH_FORWARD.md` §4) |
-| Real CFD training/validation | Not started; static (closed-form) Phase 2 test (`PATH_FORWARD.md` Step 4) is the next planned step |
+| Phase 2 static test, Step 4a | **Done** (`phase2/static_rom/`, `phase2/results_step4a/`): null control exact, sanity checks vs Phase 1 pass, quadratic OpInf at the POD floor on the transient-including window |
+| Step 5 decision rule | **Draft** (`phase2/DECISION_RULE_step5.md`), pending owner sign-off |
+| Step 4b | Plumbing, fixture and case kit ready (`phase2/case_4b/`, untested); **the drag design fails the detectability check** — the term choice is open |
 
 ## 8. Known Issues, Fragilities & Uncertainties
 
@@ -125,6 +127,22 @@ Graph → `build_from_operator_graph()` maps distinct `physical_type`s to learna
 14. **Open**: the draft `ground_truth_pimpleFoam_v2006.yaml` (51 entries, all `reviewed: false`) needs human review before any Gate 1 result against it counts (suggested scope: operator-bearing entries — see the file's own header for what's in/out of scope). Two ontology mislabels are pending review on the expanded viscous term: the `fvc::div` of `nuEff*dev2(T(grad U))` is currently labeled `convection_explicit`, and the nested `fvc::grad(U)` inside it is labeled `pressure_gradient_explicit` — both look like mislabels for this term and need a reviewer's correction (`phase2/extractor/ontology.py`). Also open: mapping `fvSchemes` keys from their C++ text form to runtime field names is not implemented, and data-flow edges ignore statement order/branches.
 15. **Phase 2 function-class issue (carried forward from item 7, now resolved by design change, not by fixing the ROM)**: Arm 3's extra blocks in the trained `ComposableOperatorROM` are bias-free linear maps — the same function-class span as Arm 2 — so a trained-ROM comparison cannot show a real gap by construction. This is **superseded by the static Step 4 design** (`PATH_FORWARD.md` §0.3, §4): closed-form least-squares fits (A, term-family selection; then B, term-wise projected operators), not gradient-trained blocks.
 16. **For the laminar/no-MRF/no-fvOptions case, parsing adds no continuum term beyond textbook Navier–Stokes.** `dev2(T(grad(U)))` = (1/3)ν∇(∇·U) ≈ 0 for divergence-free flow; the other extra terms found by parsing (`ddtCorr`, SIMPLEC-consistent terms) are numerical, not physical. So **Step 4a (the unmodified-solver control) is expected to be a null result by construction** — this is the intended control, not a failure (`PATH_FORWARD.md` §5 Progress Log, 2026-09-17).
+
+### New findings (2026-09-23)
+
+17. **Step 4a (static null control) done.**
+    - Arm 3 ≡ Arm 2 exactly on the unmodified data, with bit-identical regressors.
+    - A λ=0 linear fit in the raw SVD basis, lifted through exact DMD modes, reproduces `phase1/results_v2` DMD to 4.7e-10. The projected rollout x = Uz of the same operator differs by up to ~3%, because the exact DMD modes differ from the projected ones.
+18. **Quadratic structure matters on the transient-including window.**
+    - Discrete `c + Az + H(z⊗z)` forecasts at 1.00–1.01× the POD floor (ranks 8–23). Linear DMD sits at 3.2–4.2×.
+    - Every linear library, centred or not and with or without a constant, stays 3–8.5× above the floor (`results_step4a/library_ablation.csv`).
+    - This is a textbook-vs-linear result, not an Arm 3 vs Arm 2 result.
+19. **The continuous (finite-difference derivative) target is poor**: 4–200× above the floor, with λ selection at the grid edge. The discrete one-step map is the primary target.
+20. **The planned Step 4b drag injection is undetectable.**
+    - |U|U projected onto the POD modes is almost entirely quadratic in z on the shedding manifold: the out-of-span fraction is 7.6e-4 (r=8) … 1.8e-7 (r=23).
+    - Its signal at cD=0.3 is 180–4,600× below the Step 5 threshold.
+    - Any smooth state-dependent term is likely to behave the same way on this low-dimensional near-periodic flow.
+    - `static_rom/detectability.py` is now a required pre-run check. The 4b design is reopened.
 
 ## 9. Key Design Assumptions
 
@@ -159,4 +177,14 @@ Factual assertions made by the repo's docstrings/READMEs were independently chec
 
 A solver mismatch was also found and addressed: the dataset was produced by OpenFOAM.com v2006 `pimpleFoam` (laminar), not the OpenFOAM.org/dev `icoFoam` fork Phase 2 had been parsing. A new fixture (`phase2/fixtures/pimpleFoam_v2006/`) pulled from the verified v2006 source, extended extractor capabilities (unqualified calls, sign/side tracking, case-driven virtual-dispatch expansion of `divDevReff` into its `linearViscousStress` terms via `dispatch.py`), and a draft ground truth (51 entries) bring Phase 2's parsing target in line with the actual data — see §8 items 12–16.
 
-**Next steps** (from `PATH_FORWARD.md`'s plan, in order): (1) human review of `ground_truth_pimpleFoam_v2006.yaml` (51 entries, plus the two pending ontology mislabels on the expanded viscous term); (2) Step 4a — the static, closed-form Phase 2 test (term-family least-squares fit on POD coefficients, A then B design) run as a control on the existing unmodified-solver data, expected to be a null result by construction, since parsing adds no continuum term beyond textbook NS for this laminar case; (3) Step 5 — pre-register the decision rule for "Arm 3 beats Arm 2" before looking at any treatment result; (4) Step 4b — install OpenFOAM locally and run a modified solver with a genuinely out-of-span term (e.g. a non-polynomial drag term), then repeat static test A on that data; the term-wise projected-operator version (B) follows once OpenFOAM mesh operators are available. The trained `ComposableOperatorROM` is retained in the codebase but is not the current Phase 2 test vehicle, because its Arm 2/Arm 3 extra blocks are bias-free linear maps of the same span and cannot show a real gap by construction.
+**Update 2026-09-23:**
+- Step 4a is done: the null control is exact, the sanity checks against Phase 1 pass, and quadratic OpInf reaches the POD floor on the transient window where DMD does not (§8 items 17–19).
+- The Step 5 decision rule is drafted, pending owner sign-off.
+- Step 4b is blocked on design: the drag injection fails the pre-run detectability check (§8 item 20).
+
+**Next steps:**
+1. The owner chooses a 4b design that passes `static_rom.detectability`. Candidates: an exogenous time-forced source; option B, term-wise projected operators; or a richer flow regime. The choice is pending a literature review.
+2. Finalise and commit the Step 5 rule before any 4b data exists.
+3. Run 4b and score it against the rule.
+
+The trained `ComposableOperatorROM` is retained but is not the test vehicle.
