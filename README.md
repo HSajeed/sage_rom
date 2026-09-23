@@ -1,6 +1,12 @@
 # SAGE-CFD
 
-**Can the structure of a CFD solver, parsed from its source code, give a better reduced-order model than hand-picked textbook physics?**
+**Can the structure of a CFD solver, parsed from its source code, give a better reduced-order model than hand-picked textbook physics?** Maybe not higher accuracy but equal (assuming I have the knowledge of the solver code I am using and the ROM is hand-made). What is the point in building this project then??
+
+1. ITHACA-FV on OpenFoam is an example which gives several ROM techniques. But what if I am using a custom solver built (I or someone built or maybe AI wrote the code!) for highly custom case (For example - stratification of LH2)? 
+2. A term that isn't a simple polynomial, such as |U|U drag, a limiter, or a turbulence blending function. A ROM expert has to recognise that the term needs special treatment (hyper-reduction) and implement it. The tool detects it from the code and routes it automatically. The advantage is that one expert decision becomes automatic.
+
+**The advantage is about cost and coverage, not accuracy. It is large, going from a solver with no ROM to a ROM in hours, for custom and evolving solvers without spending hours on code reading and identification and without having considerable expertise of the C++ code (or any other language).
+
 
 SAGE-CFD reads the C++ source of an OpenFOAM solver and extracts the terms of the momentum equation that is actually solved. It then uses those terms to choose the regressors of a reduced-order model (ROM), which it compares with a ROM built from textbook Navier–Stokes structure. The test case is the 2D laminar cylinder wake (Re = 100) from the [flowTorch](https://github.com/AndreWeiner/flowtorch) datasets.
 
