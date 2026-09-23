@@ -1,0 +1,40 @@
+pimpleFoam_v2006_drag fixture -- provenance
+============================================
+
+Step 4b prep (PATH_FORWARD.md Step 4b, 2026-09-23). This is a MODIFIED
+copy of fixtures/pimpleFoam_v2006/ (verbatim OpenFOAM.com v2006 pimpleFoam,
+see that directory's own PROVENANCE.txt), not a fresh upstream fetch.
+
+Modified (not verbatim upstream):
+  UEqn.H          -- one line added to the tUEqn assembly:
+                     `+ fvm::Sp(cD*mag(U), U)`, an implicit quadratic-drag
+                     sink. Every other line is byte-identical to
+                     fixtures/pimpleFoam_v2006/UEqn.H.
+  createFields.H  -- `cD` read as a dimensionedScalar from
+                     transportProperties (dimensions [0 -1 0 0 0 0 0],
+                     1/length) immediately after laminarTransport is
+                     constructed. Every other line is byte-identical to
+                     fixtures/pimpleFoam_v2006/createFields.H.
+
+Verbatim copies of fixtures/pimpleFoam_v2006/ (unchanged, same provenance
+as documented there):
+  pEqn.H, fvSchemes_of_cylinder2D, turbulenceProperties_of_cylinder2D,
+  linearViscousStress.C, linearViscousStress.H.
+
+NOT copied here (not needed by build_operator_graph's UEqn/pEqn parse,
+and unaffected by the drag modification): pimpleFoam.C, Stokes.C/.H,
+turbulentTransportModel.H, IncompressibleTurbulenceModel.C/.H, upstream/.
+See phase2/case_4b/pimpleDragFoam/ for the full modified-solver source
+tree (marked untested there -- needs OpenFOAM v2006 to build/run).
+
+Sign convention (double-checked, see UEqn.H comment history / commit
+message): `+ fvm::Sp(cD*mag(U), U)` sits on the LHS of
+`tUEqn == fvOptions(U)`, i.e. inside the momentum matrix being solved as
+`ddt(U) + div(phi,U) + MRF.DDt(U) + divDevReff(U) + cD*mag(U)*U ==
+fvOptions(U)`, and momentum is then solved as
+`UEqn == -fvc::grad(p)`. Moving everything but ddt(U) to the RHS:
+`dU/dt = -div(phi,U) - MRF.DDt(U) - divDevReff(U) + fvOptions(U)
+         - grad(p) - cD*mag(U)*U`
+so the added term contributes `-cD*mag(U)*U`, a drag SINK on the momentum
+RHS for cD > 0 -- matching the physical `-cD|U|U` quadratic drag the term
+is meant to represent, not a source.

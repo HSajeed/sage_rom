@@ -18,6 +18,7 @@ Each entry maps a DSL call to:
   - notes : short justification, for provenance / human review
 """
 
+import re
 from dataclasses import dataclass
 
 
@@ -51,7 +52,12 @@ ONTOLOGY: dict[str, dict[str, OperatorMeaning]] = {
         ),
         "Sp": OperatorMeaning(
             "source_implicit", "implicit",
-            "Implicit source/sink term, linear in the solved field."
+            "Implicit source/sink term, linear in the solved field. "
+            "Operand-aware callers should use resolve_label() instead, "
+            "which distinguishes 'implicit_source_linear' (constant "
+            "coefficient) from 'implicit_source_nonlinear_drag' "
+            "(coefficient contains mag() of the solved field, e.g. "
+            "fvm::Sp(cD*mag(U), U) -- Step 4b's injected drag term)."
         ),
         "SuSp": OperatorMeaning(
             "source_semi_implicit", "implicit",
@@ -245,6 +251,35 @@ def _resolve_grad(function: str, arguments: list[str]) -> OperatorMeaning | None
     return None
 
 
+def _resolve_fvm_sp(arguments: list[str]) -> OperatorMeaning:
+    """
+    Operand-aware fvm::Sp(coeff, field): a plain fvm::Sp(lambda, U) with a
+    coefficient that does not reference the solved field is a linear
+    implicit source/sink (coeff*U, coeff constant in U). fvm::Sp(cD*mag(U),
+    U) -- Step 4b's injected drag term -- has a coefficient containing
+    mag(<field>) of the very field being solved, so the term coeff*U =
+    cD*mag(U)*U is quadratic (drag) in U even though the fvMatrix
+    contribution is assembled implicitly; it is given its own physical_type
+    so term_library.py can route it to the out-of-span quadratic_drag
+    regressor family instead of the linear one.
+    """
+    coeff = _normalize_operand(arguments[0]) if arguments else ""
+    field = _normalize_operand(arguments[1]) if len(arguments) > 1 else ""
+    if field and re.search(rf"mag\(\s*{re.escape(field)}\s*\)", coeff):
+        return OperatorMeaning(
+            "implicit_source_nonlinear_drag", "implicit",
+            "Operand-aware: fvm::Sp(coeff, U) whose coefficient contains "
+            "mag(U) of the solved field U -- an implicit quadratic-drag "
+            "sink (coeff*U with |U|-dependent coeff), not a constant-"
+            "coefficient linear source."
+        )
+    return OperatorMeaning(
+        "implicit_source_linear", "implicit",
+        "Operand-aware: fvm::Sp(coeff, U) with a coefficient that does not "
+        "depend on the solved field's magnitude -- linear in U."
+    )
+
+
 def _resolve_fvc_div(arguments: list[str]) -> OperatorMeaning:
     if len(arguments) == 2:
         return OperatorMeaning(
@@ -363,6 +398,9 @@ def resolve_label(
 
     if namespace == "fvc" and function == "div":
         return _resolve_fvc_div(arguments)
+
+    if namespace == "fvm" and function == "Sp":
+        return _resolve_fvm_sp(arguments)
 
     if not namespace:
         meaning = _RECEIVER_TABLE.get((receiver, function))

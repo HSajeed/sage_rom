@@ -1,0 +1,79 @@
+{
+  "family": "quadratic_drag",
+  "amplitude": 0.3,
+  "b_val": 3.0,
+  "rows": [
+    {
+      "window": "full",
+      "rank": 8,
+      "out_of_span_fraction": 0.0007593039827535046,
+      "signal": 9.826425467017614e-06,
+      "arm2_val_residual": 0.001099362206583363,
+      "signal_over_threshold": 0.0029794321981034583,
+      "detectable": false
+    },
+    {
+      "window": "full",
+      "rank": 11,
+      "out_of_span_fraction": 0.0001179611061846097,
+      "signal": 1.5325278022700144e-06,
+      "arm2_val_residual": 0.0008016151140718814,
+      "signal_over_threshold": 0.0006372666779719225,
+      "detectable": false
+    },
+    {
+      "window": "full",
+      "rank": 15,
+      "out_of_span_fraction": 2.6414303153660454e-05,
+      "signal": 3.4385556070263167e-07,
+      "arm2_val_residual": 5.084876043295728e-05,
+      "signal_over_threshold": 0.00225410647689892,
+      "detectable": false
+    },
+    {
+      "window": "full",
+      "rank": 23,
+      "out_of_span_fraction": 1.7603586793113426e-07,
+      "signal": 2.2823804500742273e-09,
+      "arm2_val_residual": 3.502144261642744e-06,
+      "signal_over_threshold": 0.00021723647757480207,
+      "detectable": false
+    },
+    {
+      "window": "post_transient",
+      "rank": 8,
+      "out_of_span_fraction": 1.6198614852429251e-06,
+      "signal": 2.0802447378000996e-08,
+      "arm2_val_residual": 8.021105144120337e-06,
+      "signal_over_threshold": 0.0008644879977771179,
+      "detectable": false
+    },
+    {
+      "window": "post_transient",
+      "rank": 11,
+      "out_of_span_fraction": 2.591545207542117e-06,
+      "signal": 3.32760226620014e-08,
+      "arm2_val_residual": 1.9844220873286795e-06,
+      "signal_over_threshold": 0.00558954046360768,
+      "detectable": false
+    },
+    {
+      "window": "post_transient",
+      "rank": 15,
+      "out_of_span_fraction": 1.24587081812604e-07,
+      "signal": 1.5989714130823293e-09,
+      "arm2_val_residual": 1.946305448852e-06,
+      "signal_over_threshold": 0.00027384728915074444,
+      "detectable": false
+    },
+    {
+      "window": "post_transient",
+      "rank": 23,
+      "out_of_span_fraction": 8.428384873463811e-16,
+      "signal": 1.0926464942104757e-17,
+      "arm2_val_residual": 2.0397550555396155e-06,
+      "signal_over_threshold": 1.785584485161654e-12,
+      "detectable": false
+    }
+  ]
+}

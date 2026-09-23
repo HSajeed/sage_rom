@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 import torch as pt
 
-from .term_library import Library, EXTRA_FAMILY_REGISTRY
+from .term_library import Library, EXTRA_FAMILY_REGISTRY, register_extra_family
 
 LAMBDA_GRID = (0.0, 1e-8, 1e-6, 1e-4, 1e-2, 1.0, 1e2)
 
@@ -54,6 +54,58 @@ def project(basis: PODBasis, X: pt.Tensor) -> pt.Tensor:
 
 def reconstruct(basis: PODBasis, Z: pt.Tensor) -> pt.Tensor:
     return basis.modes @ Z + basis.mean.unsqueeze(-1)
+
+
+def make_basis_ctx(basis: PODBasis, n_cells: int) -> dict:
+    """The `basis_ctx` this module's callers (run_step4a.py, tests) pass
+    through build_regressors()/select_lambda()/rollout() so out-of-span
+    EXTRA_FAMILY_REGISTRY callables (currently just quadratic_drag, below)
+    can reconstruct the full field from a POD-coefficient column: `basis`
+    to go from Z back to X = modes @ Z + mean, and `n_cells` to split the
+    reconstructed X (2*n_cells rows) back into the [u_x; u_y] stacking
+    convention used everywhere in this codebase (see
+    phase1/data_loading.py's CylinderSnapshots.data_matrix docstring)."""
+    return {"basis": basis, "n_cells": n_cells}
+
+
+def _quadratic_drag_columns(Z: pt.Tensor, basis_ctx) -> pt.Tensor:
+    """Step 4b out-of-span regressor for the injected `fvm::Sp(cD*mag(U),
+    U)` UEqn term (term_library.py: physical_type
+    "implicit_source_nonlinear_drag" -> extra family "quadratic_drag").
+
+    Reconstructs the full velocity field per training/rollout column,
+    Utilde = mean + Phi z (basis_ctx["basis"]), forms the per-cell
+    quadratic-drag vector |Utilde| * Utilde pointwise (u_x rows stacked
+    over u_y rows, per basis_ctx["n_cells"] -- the same [u_x; u_y] layout
+    as the data matrix everywhere else in this codebase), and projects
+    that drag field back onto the SAME POD modes: Phi^T(|Utilde| Utilde).
+
+    Design choice, documented rather than silently assumed: this does NOT
+    subtract the drag field's own mean before projecting (unlike the
+    velocity basis itself, which is built from centred data). The drag
+    regressor is meant to reproduce coeff*U = cD*mag(U)*U as an ADDITIVE
+    term of the dz/dt (or z_{k+1}) target, which is itself built from the
+    (possibly non-centred, in the {lin}-only DMD sanity check) POD
+    coefficients directly -- adding a second, independent mean-subtraction
+    convention for just this one family would make its regression
+    coefficient not directly comparable to a coeff*mag(U)*U model in the
+    physical field. Projecting the raw (uncentred) quadratic field is the
+    literal Phi^T(|Utilde| Utilde) the Step 4a/4b spec calls for.
+
+    Vectorized: Z may hold many samples at once (r, n_samples) -- used
+    both when building the fit regressor matrix and, one column at a time,
+    inside rollout()'s per-step evaluation.
+    """
+    basis: PODBasis = basis_ctx["basis"]
+    n_cells: int = basis_ctx["n_cells"]
+    X = reconstruct(basis, Z)              # (2*n_cells, n_samples)
+    ux, uy = X[:n_cells, :], X[n_cells:, :]
+    mag = pt.sqrt(ux * ux + uy * uy)
+    drag_full = pt.cat([mag * ux, mag * uy], dim=0)   # (2*n_cells, n_samples)
+    return basis.modes.T @ drag_full                   # (r, n_samples)
+
+
+register_extra_family("quadratic_drag", _quadratic_drag_columns)
 
 
 def _quadratic_columns(Z: pt.Tensor) -> pt.Tensor:

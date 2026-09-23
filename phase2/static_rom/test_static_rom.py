@@ -15,10 +15,11 @@ import tempfile
 
 import torch as pt
 
-from extractor.operator_graph import build_operator_graph
+from extractor.operator_graph import build_operator_graph, equation_terms
 from static_rom.case_activity import read_case_activity
 from static_rom.opinf import (
-    build_regressors, build_target, fit_ridge, pod_basis, project, rollout,
+    build_regressors, build_target, fit_ridge, make_basis_ctx, pod_basis, project, reconstruct,
+    rollout, select_lambda,
 )
 from static_rom.term_library import Library, arm2_library, arm3_library, register_extra_family
 
@@ -31,6 +32,11 @@ TURB_PROPS = "fixtures/pimpleFoam_v2006/turbulenceProperties_of_cylinder2D"
 ICOFOAM_UNKNOWN = "fixtures/icoFoam_modified_unknown.C"
 ICOFOAM_SCHEMES = "fixtures/fvSchemes"
 DATASET_CASE = "../data/datasets_29_10_2021/datasets/of_cylinder2D_binary"
+
+UEQN_DRAG = "fixtures/pimpleFoam_v2006_drag/UEqn.H"
+PEQN_DRAG = "fixtures/pimpleFoam_v2006_drag/pEqn.H"
+FVSCHEMES_DRAG = "fixtures/pimpleFoam_v2006_drag/fvSchemes_of_cylinder2D"
+TURB_PROPS_DRAG = "fixtures/pimpleFoam_v2006_drag/turbulenceProperties_of_cylinder2D"
 
 
 def check(name: str, condition: bool, detail: str = "") -> None:
@@ -250,6 +256,176 @@ def check_dmd_lambda_zero_equivalence() -> None:
     check("lambda=0 DMD-equivalence: exact linear recovery", err < 1e-8, f"err={err:.2e}")
 
 
+def _build_pimplefoam_drag_graph():
+    return build_operator_graph(
+        UEQN_DRAG, fvschemes_path=FVSCHEMES_DRAG, extra_sources=[PEQN_DRAG],
+        include_unqualified=True, expand_dispatch=True,
+        turbulence_properties_path=TURB_PROPS_DRAG,
+    )
+
+
+def check_arm3_library_drag_fixture_has_quadratic_drag_extra() -> None:
+    """Step 4b: arm3_library on the drag fixture's UEqn (the parsed
+    fvm::Sp(cD*mag(U), U) term, labeled implicit_source_nonlinear_drag by
+    the operand-aware ontology rule) must add "quadratic_drag" to
+    library.extras, with a provenance row recording where it came from --
+    not silently drop it, and not raise (it's a mapped, reviewed rule, not
+    a needs_review term)."""
+    g = _build_pimplefoam_drag_graph()
+    lib3 = arm3_library(g, equation="UEqn", case_dir=DATASET_CASE)
+    check("arm3_library(drag fixture): quadratic_drag in extras",
+          "quadratic_drag" in lib3.extras, f"extras={lib3.extras}")
+    check("arm3_library(drag fixture): families unchanged from the baseline arm3/arm2 span",
+          lib3.families == arm2_library().families, f"families={lib3.families}")
+
+    drag_rows = [row for row in lib3.provenance if row.get("extra") == "quadratic_drag"]
+    check("arm3_library(drag fixture): provenance has exactly one quadratic_drag row",
+          len(drag_rows) == 1, f"{len(drag_rows)} rows: {drag_rows}")
+    if drag_rows:
+        row = drag_rows[0]
+        check("arm3_library(drag fixture): quadratic_drag provenance physical_type",
+              row["physical_type"] == "implicit_source_nonlinear_drag", f"row={row}")
+        check("arm3_library(drag fixture): quadratic_drag provenance qualified_name is fvm::Sp",
+              row["qualified_name"] == "fvm::Sp", f"row={row}")
+
+    # And the baseline (unmodified) fixture must NOT pick up the extra --
+    # confirms the rule is genuinely operand-aware, not a blanket fvm::Sp
+    # rule that would also fire on a (nonexistent, here) linear fvm::Sp.
+    g_baseline = _build_pimplefoam_graph()
+    lib3_baseline = arm3_library(g_baseline, equation="UEqn", case_dir=DATASET_CASE)
+    check("arm3_library(baseline fixture): no quadratic_drag extra",
+          lib3_baseline.extras == (), f"extras={lib3_baseline.extras}")
+
+
+def check_quadratic_drag_columns_match_naive_loop() -> None:
+    """The vectorized quadratic_drag EXTRA_FAMILY_REGISTRY callable
+    (opinf._quadratic_drag_columns, reached only via the registry here --
+    this test doesn't import it directly, to exercise the same lookup
+    path build_regressors uses) must match a naive per-cell, per-sample
+    Python loop computing Phi^T(|Utilde| Utilde) one column/one cell at a
+    time."""
+    n_cells, r, n_samples = 5, 3, 4
+    modes = pt.linalg.qr(pt.tensor([
+        [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 1.0, 0.0],
+        [0.0, 1.0, 1.0], [1.0, 0.0, 1.0], [1.0, 1.0, 1.0], [0.5, 0.2, 0.1],
+        [0.1, 0.5, 0.2], [0.2, 0.1, 0.5],
+    ], dtype=pt.float64)).Q[:, :r]   # (2*n_cells, r), orthonormal
+    mean = pt.tensor([0.1, -0.05, 0.2, 0.0, 0.15, -0.1, 0.05, 0.0, -0.2, 0.1], dtype=pt.float64)
+    from static_rom.opinf import PODBasis
+    basis = PODBasis(modes=modes, mean=mean, s=pt.ones(r, dtype=pt.float64))
+    basis_ctx = make_basis_ctx(basis, n_cells)
+
+    Z = pt.tensor([
+        [0.3, -0.2, 0.5, 0.1],
+        [-0.1, 0.4, -0.3, 0.2],
+        [0.2, 0.1, -0.4, -0.5],
+    ], dtype=pt.float64)
+
+    library = Library(families=("const",), extras=("quadratic_drag",))
+    D, groups = build_regressors(Z, library, basis_ctx=basis_ctx)
+    got = D[groups["quadratic_drag"], :]
+
+    X = reconstruct(basis, Z)   # (2*n_cells, n_samples)
+    naive = pt.zeros((r, n_samples), dtype=pt.float64)
+    for s in range(n_samples):
+        drag_full = pt.zeros(2 * n_cells, dtype=pt.float64)
+        for c in range(n_cells):
+            ux, uy = X[c, s].item(), X[n_cells + c, s].item()
+            mag = math.sqrt(ux * ux + uy * uy)
+            drag_full[c] = mag * ux
+            drag_full[n_cells + c] = mag * uy
+        for k in range(r):
+            naive[k, s] = sum(modes[i, k].item() * drag_full[i].item() for i in range(2 * n_cells))
+
+    err = (got - naive).abs().max().item()
+    check("quadratic_drag columns match naive per-cell loop", err < 1e-10, f"max|diff|={err:.2e}")
+
+
+def check_drag_synthetic_injection() -> None:
+    """Full-space synthetic system on n_cells cells with a TRUE
+    -cD|u|u drag term (plus a stable linear part and a pointwise-quadratic
+    "convection-like" nonlinearity that IS exactly representable by the
+    quad family after Galerkin projection, so this isolates the drag term
+    as the only genuinely out-of-span piece): simulate, POD it, fit Arm 2
+    (const/lin/quad only) and Arm 3 (+ quadratic_drag) with the SAME
+    select_lambda, and check Arm 3's validation residual is lower by a
+    clear factor and it recovers the drag coefficient approximately."""
+    n_cells = 4
+    dim = 2 * n_cells
+    dt = 0.02
+    n_steps = 600
+    cD_true = 0.5
+    alpha = 0.03
+
+    # Oscillatory-decay linear part (2x2 rotation-decay blocks, distinct
+    # frequencies) so the trajectory stays quasi-periodic/multi-modal
+    # instead of collapsing onto one dominant direction -- deterministic,
+    # no RNG, chosen empirically to give a well-conditioned POD spectrum.
+    omegas = (3.0, 5.0, 7.0, 11.0)
+    eps = 0.05
+    L = pt.zeros((dim, dim), dtype=pt.float64)
+    for k, om in enumerate(omegas):
+        i, j = 2 * k, 2 * k + 1
+        L[i, i] = -eps
+        L[j, j] = -eps
+        L[i, j] = -om
+        L[j, i] = om
+
+    def step(u: pt.Tensor) -> pt.Tensor:
+        ux, uy = u[:n_cells], u[n_cells:]
+        quad = pt.cat([alpha * (ux * ux - uy * uy), alpha * (2 * ux * uy)])
+        mag = pt.sqrt(ux * ux + uy * uy)
+        drag = cD_true * pt.cat([mag * ux, mag * uy])
+        return u + dt * (L @ u + quad - drag)
+
+    u0 = pt.tensor([0.6, -0.4, 0.5, -0.3, 0.5, 0.3, -0.4, 0.2], dtype=pt.float64)
+    traj = [u0]
+    u = u0
+    for _ in range(n_steps):
+        u = step(u)
+        traj.append(u)
+    X = pt.stack(traj, dim=1)
+
+    r = 4   # partial truncation (dim=8): leaves the drag term genuinely
+            # out-of-span for the quad family, not exactly fittable.
+    basis = pod_basis(X, r=r, center=True)
+    Z = project(basis, X)
+    basis_ctx = make_basis_ctx(basis, n_cells)
+
+    lib2 = Library(families=("const", "lin", "quad"), extras=())
+    lib3 = Library(families=("const", "lin", "quad"), extras=("quadratic_drag",))
+
+    Z_input, Y, _time_index, _trunc = build_target(Z, "discrete")
+    n = Z_input.shape[1]
+    n_val = int(round(0.2 * n))
+    n_train = n - n_val
+
+    def _fit_and_score(library: Library):
+        D, groups = build_regressors(Z_input, library, basis_ctx=basis_ctx)
+        D_train, Y_train = D[:, :n_train], Y[:, :n_train]
+        D_val, Y_val = D[:, n_train:], Y[:, n_train:]
+        lam_lin, lam_quad, _ = select_lambda(Z, library, "discrete", dt=dt, basis_ctx=basis_ctx)
+        coef = fit_ridge(D_train, Y_train, lam_lin, lam_quad, groups)
+        val_residual = (pt.linalg.norm(coef @ D_val - Y_val) / pt.linalg.norm(Y_val)).item()
+        return coef, groups, val_residual
+
+    coef2, _groups2, val2 = _fit_and_score(lib2)
+    coef3, groups3, val3 = _fit_and_score(lib3)
+
+    check("drag injection: Arm3 beats Arm2 by >3x on validation residual",
+          val2 > 3.0 * val3, f"val2={val2:.3e} val3={val3:.3e} ratio={val2 / val3:.2f}")
+
+    # Recovered drag coefficient: the fitted extra block (r x r) should be
+    # approximately -dt*cD_true * I (each POD mode's drag contribution is
+    # dominated by its own reconstructed-field component at this
+    # truncation) -- read cD off its diagonal.
+    extra_block = coef3[:, groups3["quadratic_drag"]]
+    cD_est = -(extra_block.diagonal().mean().item()) / dt
+    rel_err = abs(cD_est - cD_true) / cD_true
+    check("drag injection: Arm3 recovers cD approximately (<=30% relative error)",
+          rel_err <= 0.30, f"cD_est={cD_est:.4f} cD_true={cD_true} rel_err={rel_err:.2%}")
+
+
 def main() -> None:
     check_quadratic_discrete_recovery()
     check_quadratic_continuous_recovery()
@@ -260,6 +436,9 @@ def main() -> None:
     check_arm3_raises_on_active_fvoptions()
     check_extra_family_hook()
     check_dmd_lambda_zero_equivalence()
+    check_arm3_library_drag_fixture_has_quadratic_drag_extra()
+    check_quadratic_drag_columns_match_naive_loop()
+    check_drag_synthetic_injection()
     print("\nAll static_rom/test_static_rom.py checks passed.")
 
 

@@ -1,0 +1,9 @@
+// RECONSTRUCTED, not fetched from upstream (Make/files isn't part of the
+// pimpleFoam_v2006 fixture -- see ../../README.md "what's verbatim vs
+// reconstructed" for the full list). Follows the standard single-.C-file
+// OpenFOAM application layout; UNTESTED (no local OpenFOAM v2006 install,
+// see ../../README.md).
+
+pimpleDragFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/pimpleDragFoam

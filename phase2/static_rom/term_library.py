@@ -56,6 +56,24 @@ _STATIC_RULES: dict[str, frozenset[str]] = {
     "diffusion": frozenset({"lin"}),
     "viscous_stress_divergence_explicit": frozenset({"lin"}),
     "pressure_gradient": frozenset({"const", "lin", "quad"}),
+    # Step 4b: a plain fvm::Sp(lambda, U) (constant coefficient) is linear
+    # in U -- already in the "lin" span, so it licenses no NEW capability
+    # for Arm 3 (see arm3_library docstring: fvm::Sp(lambda, U) is
+    # unsuitable as an out-of-span injected term for exactly this reason).
+    "implicit_source_linear": frozenset({"lin"}),
+}
+
+# physical_type -> out-of-span "extra" family name (looked up in
+# EXTRA_FAMILY_REGISTRY, see module docstring). Unlike _STATIC_RULES, these
+# terms license a regressor family that is NOT one of {const, lin, quad} --
+# Arm 2 (the textbook library) never gets these, by construction, so a
+# term mapped here is exactly the kind of out-of-span capability Step 4b's
+# null-vs-treatment comparison needs.
+_EXTRA_RULES: dict[str, str] = {
+    # fvm::Sp(cD*mag(U), U): coeff*U = cD*mag(U)*U is quadratic (drag) in
+    # U, evaluated pointwise per cell then projected -- Phi^T(|U~|U~), see
+    # opinf.py's quadratic_drag EXTRA_FAMILY_REGISTRY entry.
+    "implicit_source_nonlinear_drag": "quadratic_drag",
 }
 
 # physical_type -> case_activity flag name. If the flag is False, the term
@@ -132,6 +150,7 @@ def arm3_library(graph, equation: str = "UEqn", case_dir: str | None = None,
         case_activity = read_case_activity(case_dir)
 
     families: set[str] = set()
+    extras: set[str] = set()
     provenance: list[dict] = []
 
     for node_id, data in equation_terms(graph, equation):
@@ -170,11 +189,18 @@ def arm3_library(graph, equation: str = "UEqn", case_dir: str | None = None,
             provenance.append(row)
             continue
 
+        if physical_type in _EXTRA_RULES:
+            extra_name = _EXTRA_RULES[physical_type]
+            extras.add(extra_name)
+            row.update(families=[], extra=extra_name, status="included (extra)")
+            provenance.append(row)
+            continue
+
         if physical_type not in _STATIC_RULES:
             raise ValueError(
                 f"arm3_library: term {data['qualified_name']}({data['arguments']}) "
                 f"[{node_id}] has unmapped physical_type={physical_type!r} -- no rule "
-                f"in term_library._STATIC_RULES/_CONDITIONAL_RULES."
+                f"in term_library._STATIC_RULES/_CONDITIONAL_RULES/_EXTRA_RULES."
             )
 
         if physical_type in _CONSTANT_COEFFICIENT_TYPES and case_activity.simulation_type != "laminar":
@@ -193,7 +219,7 @@ def arm3_library(graph, equation: str = "UEqn", case_dir: str | None = None,
     # const is always included (inlet BC; centred POD coordinates).
     families.add("const")
 
-    return Library(families=_sorted_families(families), extras=(), provenance=provenance)
+    return Library(families=_sorted_families(families), extras=tuple(sorted(extras)), provenance=provenance)
 
 
 if __name__ == "__main__":

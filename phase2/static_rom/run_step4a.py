@@ -41,7 +41,7 @@ from static_rom.case_activity import read_case_activity                  # noqa:
 from static_rom.term_library import arm2_library, arm3_library           # noqa: E402
 from static_rom.opinf import (                                            # noqa: E402
     LAMBDA_GRID, Library, build_regressors, build_target, fit_ridge,
-    pod_basis, project, reconstruct, rollout, select_lambda,
+    make_basis_ctx, pod_basis, project, reconstruct, rollout, select_lambda,
 )
 
 RANKS = (8, 11, 15, 23)
@@ -55,6 +55,7 @@ N_LOO_BLOCKS = 5
 DEFAULT_CASE_DIR = str((_PHASE2_DIR.parent / "data" / "datasets_29_10_2021" / "datasets" / "of_cylinder2D_binary"))
 DEFAULT_SOURCE_DIR = str(_PHASE2_DIR / "fixtures" / "pimpleFoam_v2006")
 DEFAULT_OUT = "results_step4a"
+DEFAULT_OUT_PLACEBO = "results_step4a_placebo"
 
 
 # ---------------------------------------------------------------------------
@@ -134,8 +135,9 @@ def _contiguous_blocks(n: int, n_blocks: int = N_LOO_BLOCKS) -> list[tuple[int, 
 
 def _forecast_from(coef: pt.Tensor, z0: pt.Tensor, kind: str, library: Library,
                     basis, n_test: int, dt: float, max_norm: float,
-                    test_data: pt.Tensor, ref_mean: pt.Tensor) -> dict:
-    traj, diverged, div_step = rollout(coef, z0, n_test, kind, library, dt=dt, max_norm=max_norm)
+                    test_data: pt.Tensor, ref_mean: pt.Tensor, basis_ctx=None) -> dict:
+    traj, diverged, div_step = rollout(coef, z0, n_test, kind, library, dt=dt, max_norm=max_norm,
+                                        basis_ctx=basis_ctx)
     pred = reconstruct(basis, traj[:, 1:])
     if diverged or not pt.isfinite(pred).all():
         return {"full_field": float("inf"), "fluctuation": float("inf"),
@@ -150,7 +152,8 @@ def _forecast_from(coef: pt.Tensor, z0: pt.Tensor, kind: str, library: Library,
 # ---------------------------------------------------------------------------
 
 def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURCE_DIR,
-               data_dir: str | None = None, out_dir: str = DEFAULT_OUT) -> dict:
+               data_dir: str | None = None, out_dir: str = DEFAULT_OUT,
+               placebo_drag: bool = False) -> dict:
     t_run_start = time.perf_counter()
     timings: dict[str, float] = {}
 
@@ -169,10 +172,26 @@ def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURC
     )
     lib2 = arm2_library()
     lib3 = arm3_library(graph, equation="UEqn", case_dir=case_dir, case_activity=case_activity)
+    if placebo_drag:
+        # Placebo control (Step 4b prep): give Arm 2 the SAME extra
+        # regressor capacity (quadratic_drag) as a drag-fixture Arm 3,
+        # WITHOUT any parse licensing it -- if Arm 2 improves just as much
+        # as Arm 3 with this extra column available, the gain in the real
+        # (parsed) Arm 3 run isn't evidence the parser found something,
+        # just that more regressor capacity always helps.
+        lib2 = Library(families=lib2.families, extras=("quadratic_drag",),
+                        provenance=lib2.provenance + [{
+                            "qualified_name": "placebo:quadratic_drag",
+                            "arguments": [], "physical_type": None,
+                            "families": [], "extra": "quadratic_drag",
+                            "status": "included (placebo, no parse)",
+                        }])
     timings["build_libraries_s"] = time.perf_counter() - t0
-    print(f"[4a] Arm2 families={lib2.families}  Arm3 families={lib3.families}  "
+    print(f"[4a] Arm2 families={lib2.families} extras={lib2.extras}  "
+          f"Arm3 families={lib3.families} extras={lib3.extras}  "
           f"(case_activity: laminar={case_activity.simulation_type == 'laminar'}, "
-          f"mrf_active={case_activity.mrf_active}, fvoptions_active={case_activity.fvoptions_active})")
+          f"mrf_active={case_activity.mrf_active}, fvoptions_active={case_activity.fvoptions_active}, "
+          f"placebo_drag={placebo_drag})")
 
     with open(results_dir / "library_provenance.json", "w") as f:
         json.dump({
@@ -213,6 +232,7 @@ def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURC
                 continue
             basis = pod_basis(w.data_matrix, rank, center=True)
             Z_fit = project(basis, w.data_matrix)
+            basis_ctx = make_basis_ctx(basis, snaps.n_cells_selected)
 
             pod_floor_pred = pod_projection_floor(pod_flowtorch.modes, pod_flowtorch.mean, test.data_matrix, rank)
             pod_floor = _errors(pod_floor_pred, test.data_matrix, train_mean_full)
@@ -227,12 +247,13 @@ def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURC
             for target_kind in TARGETS:
                 for arm_name, library in (("arm2", lib2), ("arm3", lib3)):
                     Z_input, Y_full, time_index, trunc = build_target(Z_fit, target_kind, dt=w.dt)
-                    D_full, groups = build_regressors(Z_input, library)
+                    D_full, groups = build_regressors(Z_input, library, basis_ctx=basis_ctx)
                     (D_train, Y_train), (D_val, Y_val) = _train_val_split(D_full, Y_full)
 
                     lam_lin, lam_quad, lam_diag = select_lambda(
                         Z_fit, library, target_kind, dt=w.dt, grid=LAMBDA_GRID,
                         val_fraction=VAL_FRACTION, rollout_steps=ROLLOUT_STEPS_FOR_SELECTION,
+                        basis_ctx=basis_ctx,
                     )
 
                     coef_val_model = fit_ridge(D_train, Y_train, lam_lin, lam_quad, groups)
@@ -241,7 +262,8 @@ def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURC
 
                     coef_final = fit_ridge(D_full, Y_full, lam_lin, lam_quad, groups)
                     forecast = _forecast_from(coef_final, z0, target_kind, library, basis,
-                                               n_test, w.dt, max_allowed, test.data_matrix, train_mean_full)
+                                               n_test, w.dt, max_allowed, test.data_matrix, train_mean_full,
+                                               basis_ctx=basis_ctx)
 
                     floor_ratio = (forecast["full_field"] / pod_floor["full_field"]
                                    if pod_floor["full_field"] > 0 else float("inf"))
@@ -268,6 +290,7 @@ def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURC
                             "row": row, "D_full": D_full, "Y_full": Y_full, "groups": groups,
                             "D_train": D_train, "Y_train": Y_train, "D_val": D_val, "Y_val": Y_val,
                             "z0": z0, "basis": basis, "max_allowed": max_allowed, "w": w,
+                            "basis_ctx": basis_ctx,
                         }
 
                     print(f"  [{window_name} r={rank:>2} {arm_name} {target_kind:>10}] "
@@ -300,7 +323,7 @@ def run_step4a(case_dir: str = DEFAULT_CASE_DIR, source_dir: str = DEFAULT_SOURC
 
     # ---- Write outputs ----
     _write_outputs(results_dir, grid_rows, noise_band, sanity, null_control,
-                    case_dir, source_dir, data_dir, timings)
+                    case_dir, source_dir, data_dir, timings, placebo_drag=placebo_drag)
     with open(results_dir / "library_ablation.csv", "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(ablation[0].keys()))
         writer.writeheader()
@@ -332,8 +355,24 @@ def _run_null_control(windows, lib2: Library, lib3: Library, grid_rows: list[dic
     arm2-vs-arm3 question this control checks). So rather than a bespoke
     lambda=0 recompute, this reuses the already-computed, properly
     regularized grid cells (all 16 window x rank x target combinations,
-    not just one) and diffs their headline scalar metrics."""
-    result = {"families_equal": lib2.families == lib3.families, "regressor_identity": [], "grid_cells": []}
+    not just one) and diffs their headline scalar metrics.
+
+    Step 4b's drag fixture/placebo runs give Arm 3 (or, under
+    --placebo-drag, Arm 2) an out-of-span `quadratic_drag` extra that the
+    OTHER arm does not have -- Arm 3 == Arm 2 no longer holds there BY
+    DESIGN (that's the treatment this control exists to distinguish from
+    the null). In that case the strict identity asserts below are skipped
+    (not silently passed): the mismatch is recorded and reported instead."""
+    same_span = (lib2.families == lib3.families and lib2.extras == () and lib3.extras == ())
+    result = {"families_equal": lib2.families == lib3.families, "same_span": same_span,
+              "lib2_extras": lib2.extras, "lib3_extras": lib3.extras,
+              "regressor_identity": [], "grid_cells": []}
+
+    if not same_span:
+        print(f"[4a] Null control SKIPPED (not a null-by-construction run): "
+              f"lib2.families={lib2.families} extras={lib2.extras}  "
+              f"lib3.families={lib3.families} extras={lib3.extras}")
+        return result
 
     w = windows["full"]
     rank = RANKS[0]
@@ -492,12 +531,13 @@ def _run_noise_band(per_window_rank, windows, lib2: Library, test, train_mean_fu
         D_train, Y_train = ctx["D_train"], ctx["Y_train"]
         D_val, Y_val = ctx["D_val"], ctx["Y_val"]
         z0, basis, max_allowed, w = ctx["z0"], ctx["basis"], ctx["max_allowed"], ctx["w"]
+        basis_ctx = ctx["basis_ctx"]
         lam_lin, lam_quad = base_row["lam_lin"], base_row["lam_quad"]
 
         def _cell_metrics(coef_val, coef_forecast) -> dict:
             val_res = _rel_l2(coef_val @ D_val, Y_val)
             fc = _forecast_from(coef_forecast, z0, target_kind, lib2, basis, N_TEST, w.dt,
-                                 max_allowed, test.data_matrix, train_mean_full)
+                                 max_allowed, test.data_matrix, train_mean_full, basis_ctx=basis_ctx)
             return {"val_residual": val_res, "forecast_full_field": fc["full_field"],
                     "forecast_fluctuation": fc["fluctuation"]}
 
@@ -627,7 +667,7 @@ def _run_library_ablation(windows, test, train_mean_full) -> list[dict]:
 
 
 def _write_outputs(results_dir: Path, grid_rows, noise_band, sanity, null_control,
-                    case_dir, source_dir, data_dir, timings) -> None:
+                    case_dir, source_dir, data_dir, timings, placebo_drag=False) -> None:
     with open(results_dir / "grid.csv", "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=_GRID_FIELDS)
         writer.writeheader()
@@ -655,6 +695,7 @@ def _write_outputs(results_dir: Path, grid_rows, noise_band, sanity, null_contro
         "git_hash": git_hash,
         "torch_version": pt.__version__,
         "case_dir": case_dir, "source_dir": source_dir, "data_dir": data_dir,
+        "placebo_drag": placebo_drag,
         "ranks": list(RANKS), "targets": list(TARGETS),
         "t_split": T_SPLIT, "n_test": N_TEST, "val_fraction": VAL_FRACTION,
         "lambda_grid": list(LAMBDA_GRID), "n_loo_blocks": N_LOO_BLOCKS,
@@ -677,7 +718,13 @@ if __name__ == "__main__":
     parser.add_argument("--case-dir", default=DEFAULT_CASE_DIR, help="OpenFOAM case directory (for case_activity)")
     parser.add_argument("--source-dir", default=DEFAULT_SOURCE_DIR, help="fixture dir with UEqn.H/pEqn.H/fvSchemes/turbulenceProperties")
     parser.add_argument("--data-dir", default=None, help="explicit dataset case path (default: flowTorch's registered of_cylinder2D_binary)")
-    parser.add_argument("--out", default=DEFAULT_OUT, help="output folder under phase2/ (default: results_step4a)")
+    parser.add_argument("--out", default=None, help="output folder under phase2/ "
+                         f"(default: {DEFAULT_OUT}, or {DEFAULT_OUT_PLACEBO} with --placebo-drag)")
+    parser.add_argument("--placebo-drag", action="store_true", help="Step 4b placebo control: give Arm 2 the "
+                         "SAME quadratic_drag extra capacity as a drag-fixture Arm 3, without any parse "
+                         "licensing it (tests whether extra capacity alone, not the parse, explains a gain)")
     args = parser.parse_args()
 
-    run_step4a(case_dir=args.case_dir, source_dir=args.source_dir, data_dir=args.data_dir, out_dir=args.out)
+    out_dir = args.out if args.out is not None else (DEFAULT_OUT_PLACEBO if args.placebo_drag else DEFAULT_OUT)
+    run_step4a(case_dir=args.case_dir, source_dir=args.source_dir, data_dir=args.data_dir, out_dir=out_dir,
+               placebo_drag=args.placebo_drag)
