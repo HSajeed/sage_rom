@@ -1,4 +1,4 @@
-# SAGE-CFD
+# SAGE-ROM
 
 **Can the structure of a CFD solver, parsed from its source code, give a better reduced-order model than hand-picked textbook physics?** 
 Maybe not higher accuracy but equal (assuming I have the knowledge of the solver code I am using and the ROM is hand-made). What is the point in building this project then??
